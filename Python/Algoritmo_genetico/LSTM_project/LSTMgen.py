@@ -37,8 +37,8 @@ def mainLSTM(batch_size, sequence_Length, hidden_size, num_layers, learning_rate
     x_trainNumpy = x_train.to_numpy()
     x_testNumpy = x_test.to_numpy()
 
-    x_train = np.vstack(x_trainNumpy[:,1]).astype(np.cfloat)
-    x_test = np.vstack(x_testNumpy[:,1]).astype(np.cfloat)
+    x_train = np.vstack(x_trainNumpy[:,1]).astype(np.complex128)
+    x_test = np.vstack(x_testNumpy[:,1]).astype(np.complex128)
 
     x_train = torch.tensor(x_train, dtype=torch.float32)
     x_test = torch.tensor(x_test, dtype=torch.float32)
