@@ -31,7 +31,7 @@ def createSequences(data, seq_length):
 		y.append(data[i+seq_length])
 	return torch.stack(x), torch.stack(y)
 
-def mainLSTM(batch_size, sequence_Length, hidden_size, num_layers, learning_rate, input_size=1,num_epochs=30, output_size=1):
+def mainLSTM(batchSize, sequenceLength, hiddenSize, numLayers, learningRate, tamanhoPopulacao, input_size=1, num_epochs=10, output_size=1):
 	x_train = pd.read_csv("/home/dragon/Python/Algoritmo_genetico/LSTM_project/train.csv")
 	x_test = pd.read_csv("/home/dragon/Python/Algoritmo_genetico/LSTM_project/test.csv")
 	x_trainNumpy = x_train.to_numpy()
@@ -43,36 +43,46 @@ def mainLSTM(batch_size, sequence_Length, hidden_size, num_layers, learning_rate
 	x_train = torch.tensor(x_train, dtype=torch.float32)
 	x_test = torch.tensor(x_test, dtype=torch.float32)
 
-	x_train, y_train = createSequences(x_train, sequence_Length)
-	train_dataset = TensorDataset(x_train, y_train)
-	train_loader = DataLoader(dataset=train_dataset, batch_size=batch_size, shuffle=True)
+	MAEs = np.zeros(tamanhoPopulacao)
+	for i in range(tamanhoPopulacao):
+		batchSize_ = int(batchSize[i])
+		sequenceLength_ = int(sequenceLength[i])
+		hiddenSize_ = int(hiddenSize[i])
+		numLayers_ = int(numLayers[i])
+		learningRate_ = int(learningRate[i])
 
-	device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-	model = LSTMModel(input_size, hidden_size, num_layers, output_size).to(device)
-	criterion = nn.MSELoss()
-	evaluation = nn.L1Loss()
-	optimizer = optim.Adam(model.parameters(), lr=learning_rate)
+		x_train, y_train = createSequences(x_train, sequenceLength_)
+		train_dataset = TensorDataset(x_train, y_train)
+		train_loader = DataLoader(dataset=train_dataset, batch_size=batchSize_, shuffle=True)
 
-	find = False
-	arrayOutput=[]
-	for epoch in range(num_epochs):
-		if find == True:
-			break
-		for i, (inputs, targets) in enumerate(train_loader):
-			inputs, targets = inputs.to(device), targets.to(device)
+		device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+		model = LSTMModel(input_size, hiddenSize_, numLayers_, output_size).to(device)
+		criterion = nn.MSELoss()
+		evaluation = nn.L1Loss()
+		optimizer = optim.Adam(model.parameters(), lr=learningRate_)
 
-			outputs = model(inputs)
-			out = model(x_train)
-			loss = criterion(outputs, targets)
-			MAE = evaluation(outputs, targets)
-			MAEGeral = evaluation(out, y_train)
-			optimizer.zero_grad()
-#           if loss.item()<1:
-#               MAE.backward()
-#           else:
-			loss.backward()
-			optimizer.step()
-			return MAEGeral.item()
-	print('Treinamento concluído.')
+		find = False
+		arrayOutput=[]
+		for epoch in range(num_epochs):
+			if find == True:
+				break
+			for _, (inputs, targets) in enumerate(train_loader):
+				inputs, targets = inputs.to(device), targets.to(device)
+
+				outputs = model(inputs)
+				out = model(x_train)
+				loss = criterion(outputs, targets)
+				MAE = evaluation(outputs, targets)
+				MAEGeral = evaluation(out, y_train)
+				optimizer.zero_grad()
+#                if loss.item()<1:
+#                    MAE.backward()
+#                else:
+				loss.backward()
+				optimizer.step()
+				MAEs[i] = MAEGeral.item()
+			print(f'batch_size={batchSize_}, sequence_Length={sequenceLength_}, hidden_size={hiddenSize_}, num_layers={numLayers_}, learning_rate={learningRate_}\nMAE={MAEs[i]}\n')
+		print('***************************************************************Próximo indivíduo***************************************************************')
+	return MAEs
 
 if __name__=="__main__":main();

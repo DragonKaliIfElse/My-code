@@ -22,7 +22,7 @@ from pygenec.evolucao import Evolucao
 from LSTM_project import LSTMgen
 
 def fun(batch, sequence, hidden, nLayers, lr): #função que descreve a variação de Z em função de X e Y
-	output = LSTMgen.mainLSTM(batch, sequence, hidden, nLayers, lr, num_epochs=10)
+	output = LSTMgen.mainLSTM(batch, sequence, hidden, nLayers, lr, tamanho_populacao)
 	return output
 
 def bin(x): #converte valores binarios em inteiros
@@ -74,14 +74,14 @@ def normaliza(populacao, genes_totais, genesPorFeatures):
 	maiorbinLayers=2.0**nLayers.shape[1] - 1.0
 	maiorbinLr=2.0**lr.shape[1] - 1.0
 
-	minLr = 0.9            #    batch_size = 12  # Tamanho das sequências analisadas
-	maxLr = 0.0001         #    sequence_Length = 3 # Sequência de dados de entrada
-	minBatch = 3           #    input_size = 1  # Número de características dos dados de entrada
-	maxBatch = 90          #     hidden_size = 50  # Tamanho do hidden state
-	minSequence = 3        #    num_layers = 2  # Número de camadas LSTM
-	maxSequence = 90       #    output_size = 1  # Número de características de saída
-	minHidden = 10         #    num_epochs = 200  # Número de épocas de treinamento
-	maxHidden = 100        #    learning_rate = 0.001  # Taxa de aprendizado
+	minLr = 0.9			#	batch_size = 12  # Tamanho das sequências analisadas
+	maxLr = 0.0001		 #	sequence_Length = 3 # Sequência de dados de entrada
+	minBatch = 3		   #	input_size = 1  # Número de características dos dados de entrada
+	maxBatch = 90		  #	 hidden_size = 50  # Tamanho do hidden state
+	minSequence = 3		#	num_layers = 2  # Número de camadas LSTM
+	maxSequence = 90	   #	output_size = 1  # Número de características de saída
+	minHidden = 10		 #	num_epochs = 200  # Número de épocas de treinamento
+	maxHidden = 100		#	learning_rate = 0.001  # Taxa de aprendizado
 	minNlayers = 2
 	maxNlayers = 10
 
@@ -93,6 +93,7 @@ def normaliza(populacao, genes_totais, genesPorFeatures):
 
 	lr = minBatch + constLr * bin(lr)
 
+	# TORNANDO OS VALORES DO INDIVIDUOS INTEIROS
 	batch1 = minBatch + constBatch * bin(batch)
 	batch=[[0]*batch1.shape[1] for _ in range(batch1.shape[0])]
 	batch = np.asarray(batch)
@@ -121,11 +122,13 @@ def normaliza(populacao, genes_totais, genesPorFeatures):
 		for j in range(nLayers1.shape[1]):
 			nLayers[i,j] = int(nLayers1[i,j])
 
-	batch = batch[:,(batch.shape[1]-3)]
-	sequence = sequence[:,(sequence.shape[1]-3)]
-	hidden = hidden[:,(hidden.shape[1]-3)]
-	nLayers = nLayers[:,(nLayers.shape[1]-3)]
-	lr = lr[:,(lr.shape[1]-2)]
+	# PEGANDO APENAS UM VALOR DO ARRAY DE INDIVIDUOS
+
+	batch = np.mean(batch,axi=1)
+	sequence = np.mean(sequence,axi=1)
+	hidden = np.mean(hidden,axi=1)
+	nLayers = np.mean(nLayers,axi=1)
+	lr = np.mean(lr,axi=1)
 
 	return batch, sequence, hidden, nLayers, lr
 
@@ -220,10 +223,6 @@ epochs = 10000
 for epoch in range(epochs):
 	for i in range(tamanho_populacao):
 		evolucao.evoluir()
-		batch, sequence, hidden, nLayers, lr = normaliza(populacao.populacao, genes_totais, genesPorFeatures)
-		print(f'batch:{batch[i]}\nsequence:{sequence[i]}\nhidden:{hidden[i]}\nnLayers:{nLayers[i]}\nlr:{lr[i]}\nMAE:{output}\n')
-		output = fun(batch[i], sequence[i], hidden[i], nLayers[i], lr[i])
-		print(f'MAE:{output}')
 '''
 fig = plt.figure(figsize=(100,100))
 ax = fig.add_subplot(111, projection='3d')
