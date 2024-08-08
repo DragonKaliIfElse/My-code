@@ -1,0 +1,10 @@
+#!/bin/bash
+while [[ "$1" != "" ]]; do
+	case $1 in
+		*)
+			python3 /usr/local/bin/spaceToTab.py $1
+			shift
+        	;;
+	esac
+done
+

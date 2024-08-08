@@ -1,0 +1,2 @@
+read import 
+cat /home/dragon/.local/lib/python3.11/site-packages/$import/__init__.py | grep "def "
