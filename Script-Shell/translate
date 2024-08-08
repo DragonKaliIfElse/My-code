@@ -1,0 +1,5 @@
+#!/bin/bash
+while [ true ];do
+	read -p "Palavra para traduzir para o inglês: " input
+	trans :en "$input"
+done

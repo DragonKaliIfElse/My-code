@@ -1,0 +1,107 @@
+#!/bin/bash
+dicionario=/home/dragon/Python/Tradutor/Dicionário
+mode="online"
+traduzido=false
+clearMode="off"
+while [[ "$1" != "" ]]; do
+	case $1 in
+		--offline)
+			shift
+			mode="offline"
+			;;
+		--clearOn)
+			shift
+			clearMode="on"
+			;;
+		--con)
+			shift
+			clearMode="on"
+			;;
+		--help)
+			shift
+			echo -e " --offline -> desativa a pesquisa via internet\n --clearOn ou --con -> ativa o clearMode\n\n ***DENTRO DO TRADUTOR***\n\n clearOn -> ativa o clearMode\n clearOff -> desativa o clearMode\n offline -> desativa a pesquisa via internet\n online -> ativa a pesquisa na internet\n dict -> abre o dicionário"
+			exit
+			;;
+		-h)
+			shift
+			echo -e " --offline -> desativa a pesquisa via internet\n --clearOn ou --con -> ativa o clearMode\n\n ***DENTRO DO TRADUTOR***\n\n clearOn -> ativa o clearMode\n clearOff -> desativa o clearMode\n offline -> desativa a pesquisa via internet\n online -> ativa a pesquisa na internet\n dict -> abre o dicionário"
+			exit
+			;;	
+		*)
+        	echo "Opção inválida: $1"
+        	exit
+        	;;
+	esac
+done
+
+while true; do
+	echo "-------------------------------------««WORD»»------------------------------------"
+	echo ""
+	read word
+	echo ""
+	if grep -q "$word" "$dicionario"; then
+		echo "-----------------------------***WORD ALREADY ADDED***----------------------------"
+		echo ""
+		grep "$word" "$dicionario"
+		echo ""
+		traduzido=true
+		if [ "$mode" != "online" ];then
+			continue
+		fi
+	elif [ "$word" == "clear" ]; then
+		clear
+		continue
+	elif [ "$word" == "dict" ]; then
+		Dicionario
+
+		if [ "$clearMode" == "on" ]; then
+			clear
+		fi
+		continue
+	elif [ "$word" == "offline" ]; then
+		mode="offline"
+		if [ "$clearMode" == "on" ]; then
+			clear
+		fi
+		continue
+	elif [ "$word" == "online" ]; then
+		mode="online"
+		if [ "$clearMode" == "on" ]; then
+			clear
+		fi
+		continue
+	elif [ "$word" == "clearOn" ]; then
+		clearMode="on"
+		if [ "$clearMode" == "on" ]; then
+			clear
+		fi
+		continue
+	elif [ "$word" == "clearOff" ]; then
+		clearMode="off"
+		if [ "$clearMode" == "on" ]; then
+			clear
+		fi
+		continue
+	fi
+	echo "----------------------------------««TRADUCTION»»---------------------------------"
+	echo ""
+	if [ $mode == "online" ]; then
+		trans :pt "$word"
+		echo ""
+	fi
+	echo "-----------------------------------««ADD_WORD»»----------------------------------"
+	read palavra
+	if [ "$palavra" == "cancel" ] || [ "$palavra" == "" ]; then
+		echo "-----------------------------***ADDITION CANCELLED***----------------------------"
+		echo ""		
+		if [ "$clearMode" == "on" ]; then
+			clear
+		fi
+		continue
+	fi
+	echo "$word ---- $palavra" >> $dicionario
+	if [ "$clearMode" == "on" ]; then
+		clear
+	fi
+done
+

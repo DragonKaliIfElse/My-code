@@ -1,0 +1,8 @@
+#!/bin/bash
+/usr/share/kali-themes/xfce4-screenshooter --region --clipboard
+xclip -selection clipboard -t image/png -o > print_para_ler.png
+python3 /home/dragon/Python/Tesseract_print
+
+mousepad texto_do_print
+rm texto_do_print
+rm /tmp/Screenshot*
