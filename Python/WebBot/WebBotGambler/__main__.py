@@ -14,7 +14,7 @@ def main():
 	webbot = WB.WebBot()
 	while True:
 		valorDaRoleta = webbot.ValorDaRoleta()
-		if webbot.getTriggered() == 1 and webbot.getColected() == True:
+		if webbot.getTriggered() == 1 and webbot.getColected() is True:
 			with open("valoresDaRoleta.txt", "a") as file:
 				file.write(f'{valorDaRoleta}\n')
 			"""
