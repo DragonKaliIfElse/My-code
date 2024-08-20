@@ -19,8 +19,6 @@ from pygenec.mutacao.flip import Flip
 from pygenec.mutacao.sequenciareversa import SequenciaReversa
 from pygenec.evolucao import Evolucao
 
-import LSTMgen
-
 def fun(x,y): #função que descreve a variação de Z em função de X e Y
 	tmp = 3*exp(-(y+1)**2 - x**2)*(x-1)**2 - exp(-(x+1)**2 - y**2/3) + exp(-x**2 - y**2) * (10*x**3 - 2*x + 10*y**5 )
 	return tmp
