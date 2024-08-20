@@ -21,15 +21,15 @@ from pygenec.evolucao import Evolucao
 
 from LSTM_project import LSTMgen
 
-def fun(batch, sequence, hidden, nLayers, lr): #função que descreve a variação de Z em função de X e Y
+def fun(batch, sequence, hidden, nLayers, lr):
 	output = LSTMgen.mainLSTM(batch, sequence, hidden, nLayers, lr, tamanho_populacao)
 	return output
 
-def bin(x): #converte valores binarios em inteiros
+def bin(x):
 	cnt=array([2**i for i in range(x.shape[1])])
 	return array([cnt * x[i,:].sum() for i in range(x.shape[0])])
 
-def xy(populacao): #normaliza o intervalo de busca da função para valores de interesse
+def xy(populacao):
 	colunas = populacao.shape[1]
 	meio = colunas // 2
 	maiorbin = 2.0**meio - 1.0
@@ -74,14 +74,14 @@ def normaliza(populacao, genes_totais, genesPorFeatures):
 	maiorbinLayers=2.0**nLayers.shape[1] - 1.0
 	maiorbinLr=2.0**lr.shape[1] - 1.0
 
-	minLr = 0.9			#	batch_size = 12  # Tamanho das sequências analisadas
-	maxLr = 0.0001		 #	sequence_Length = 3 # Sequência de dados de entrada
-	minBatch = 3		   #	input_size = 1  # Número de características dos dados de entrada
-	maxBatch = 90		  #	 hidden_size = 50  # Tamanho do hidden state
-	minSequence = 3		#	num_layers = 2  # Número de camadas LSTM
-	maxSequence = 90	   #	output_size = 1  # Número de características de saída
-	minHidden = 10		 #	num_epochs = 200  # Número de épocas de treinamento
-	maxHidden = 100		#	learning_rate = 0.001  # Taxa de aprendizado
+	minLr = 0.9
+	maxLr = 0.0001
+	minBatch = 3
+	maxBatch = 90
+	minSequence = 3
+	maxSequence = 90
+	minHidden = 10
+	maxHidden = 100
 	minNlayers = 2
 	maxNlayers = 10
 
@@ -93,7 +93,6 @@ def normaliza(populacao, genes_totais, genesPorFeatures):
 
 	lr = minBatch + constLr * bin(lr)
 
-	# TORNANDO OS VALORES DO INDIVIDUOS INTEIROS
 	batch1 = minBatch + constBatch * bin(batch)
 	batch=[[0]*batch1.shape[1] for _ in range(batch1.shape[0])]
 	batch = np.asarray(batch)
@@ -122,8 +121,6 @@ def normaliza(populacao, genes_totais, genesPorFeatures):
 		for j in range(nLayers1.shape[1]):
 			nLayers[i,j] = int(nLayers1[i,j])
 
-	# PEGANDO APENAS UM VALOR DO ARRAY DE INDIVIDUOS
-
 	batch = np.mean(batch,axi=1)
 	sequence = np.mean(sequence,axi=1)
 	hidden = np.mean(hidden,axi=1)
@@ -132,7 +129,7 @@ def normaliza(populacao, genes_totais, genesPorFeatures):
 
 	return batch, sequence, hidden, nLayers, lr
 
-def avaliacao(populacao, m='max'): # retorna o valor resultante dos indivíduos X e Y
+def avaliacao(populacao, m='max'):
 	if m=='max':
 		batch, sequence, hidden, nLayers, lr = normaliza(populacao, genes_totais, genesPorFeatures)
 		tmp = fun(batch, sequence, hidden, nLayers, lr)
