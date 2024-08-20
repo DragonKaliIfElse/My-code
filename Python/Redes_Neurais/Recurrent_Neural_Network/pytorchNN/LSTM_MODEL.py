@@ -33,15 +33,15 @@ def createSequences(data, seq_length):
     return torch.stack(x), torch.stack(y)
 
 def main():
-	# parametros da NN
-	batch_size = 12 # # Tamanho das sequências analisadas
-	sequence_Length = 3 # Sequência de dados de entrada
-	input_size = 1  # Número de características dos dados de entrada
-	hidden_size = 50  # Tamanho do hidden state
-	num_layers = 2  # Número de camadas LSTM
-	output_size = 1  # Número de características de saída
-	num_epochs = 200  # Número de épocas de treinamento
-	learning_rate = 0.001  # Taxa de aprendizado
+
+	batch_size = 12
+	sequence_Length = 3
+	input_size = 1
+	hidden_size = 50
+	num_layers = 2
+	output_size = 1
+	num_epochs = 200
+	learning_rate = 0.001
 
 	x_train = pd.read_csv("train.csv")
 	x_test = pd.read_csv("test.csv")
