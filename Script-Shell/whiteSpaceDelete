@@ -1,11 +1,5 @@
 #!/bin/bash
-while [[ "$1" != "" ]]; do
-	case $1 in
-		*)
-			python3 /usr/local/bin/whiteSpaceDelete.py $1
-			shift
-        	;;
-	esac
+args=("$@")
+for agr in "${args[@]}"; do
+    python3 /usr/local/bin/whiteSpaceDelete.py $arg
 done
-
-

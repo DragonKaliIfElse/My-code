@@ -1,11 +1,5 @@
 #!/bin/bash
-
-while [[ "$1" != "" ]]; do
-	case $1 in
-		*)
-			python3 /usr/local/bin/tabToSpace.py $1
-			shift
-        	;;
-	esac
+agrs=("$@")
+for arg in "${args[@]}"; do
+	python3 /usr/local/bin/tabToSpace.py $arg
 done
-

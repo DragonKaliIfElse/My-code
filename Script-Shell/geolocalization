@@ -1,0 +1,53 @@
+#!/bin/python3
+import sys
+import json
+import requests
+import os
+
+def get_ip_info(ip):
+    url = 'http://ip-api.com/json/' + ip
+    response = requests.get(url)
+    data = response.json()
+    return data
+
+def main():
+    localization = False
+    for i in range(len(sys.argv)):
+        match sys.argv[i]:
+            case '-h':
+                print("GEOLOCALIZATION SYSTEM BASED IN IP ADDRESS\n")
+                print("-h, --help -> display help\n-l, --localization -> display lozalization of ip address in the map\n")
+                return 0
+            case '--help':
+                print("-h, --help -> display help\n-l, --localization -> display lozalization of ip address in the map\n")
+                return 0
+            case '-l':
+                localization = True
+            case '--localization':
+                localization = True
+    for i in range(len(sys.argv)):
+        if i==0: continue;
+        ip = sys.argv[i]
+        info = get_ip_info(ip)
+        infop = json.dumps(info)
+        infop = infop.replace(",","\n")
+        print(infop)
+        if localization is True:
+            try :
+                browser = "microsoft-edge"
+                comand = f'{browser} https://www.google.com/search?q=google+maps+{info["lat"]}%2C+{info["lon"]}'
+                result = os.system(comand)
+                if result != 0:
+                    raise Exception(browser)
+            except Exception as error:
+                try:
+                    print(f'Browser not found: {error}')
+                    browser = "firefox"
+                    comand = f'{browser} https://www.google.com/search?q=google+maps+{info["lat"]}%2C+{info["lon"]}'
+                    result = os.system(comand)
+                    if result != 0:
+                        raise Exception(browser)
+                except Exception as error:
+                    print(f'Browser not found: {error}\ntá foda')
+    return 0
+if __name__ == '__main__':main();
