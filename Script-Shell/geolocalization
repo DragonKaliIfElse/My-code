@@ -23,10 +23,13 @@ def main():
                 return 0
             case '-l':
                 localization = True
+                sys.argv[i] = False
             case '--localization':
                 localization = True
+                sys.argv[i] = False
     for i in range(len(sys.argv)):
         if i==0: continue;
+        if sys.argv[i] is False: continue;
         ip = sys.argv[i]
         info = get_ip_info(ip)
         infop = json.dumps(info)
