@@ -1,0 +1,170 @@
+#!/bin/bash
+dicionario=/home/dragon/Python/Tradutor/Dicionário
+mode="online"
+traduzido=false
+clearMode="off"
+while [[ "$1" != "" ]]; do
+    case $1 in
+        --offline)
+            shift
+            mode="offline"
+            ;;
+        --clearOn)
+            shift
+            clearMode="on"
+            ;;
+        --con)
+            shift
+            clearMode="on"
+            ;;
+        --help)
+            shift
+            echo -e " --offline -> desativa a pesquisa via internet\n --clearOn ou --con -> ativa o clearMode\n\n ***DENTRO DO TRADUTOR***\n\n clearOn -> ativa o clearMode\n clearOff -> desativa o clearMode\n offline -> desativa a pesquisa via internet\n online -> ativa a pesquisa na internet\n dict -> abre o dicionário"
+            exit
+            ;;
+        -h)
+            shift
+            echo -e " --offline -> desativa a pesquisa via internet\n --clearOn ou --con -> ativa o clearMode\n\n ***DENTRO DO TRADUTOR***\n\n clearOn -> ativa o clearMode\n clearOff -> desativa o clearMode\n offline -> desativa a pesquisa via internet\n online -> ativa a pesquisa na internet\n dict -> abre o dicionário"
+            exit
+            ;;
+        *)
+            echo "Opção inválida: $1"
+            exit
+            ;;
+    esac
+done
+
+while true; do
+    echo "««WORD»»"
+    echo ""
+    read word
+    echo ""
+    case $word in 
+        "clear")
+            clear
+            continue
+            shift
+            ;;
+        "dict")
+            Dicionario
+            if [ "$clearMode" == "on" ]; then
+                clear
+            fi
+            continue
+            shift
+            ;;
+        "offline")
+            mode="offline"
+            if [ "$clearMode" == "on" ]; then
+                clear
+            fi
+            continue
+            shift
+            ;;
+        "online")
+            mode="online"
+            if [ "$clearMode" == "on" ]; then
+                clear
+            fi
+            continue
+            shift
+            ;;
+        "clearOn")
+            clearMode="on"
+            if [ "$clearMode" == "on" ]; then
+                clear
+            fi
+            continue
+            shift
+            ;;
+        "clearon")
+            clearMode="on"
+            if [ "$clearMode" == "on" ]; then
+                clear
+            fi
+            continue
+            shift
+            ;;
+        "clearOff")
+            clearMode="off"
+            continue
+            shift
+            ;;
+        "clearoff")
+            clearMode="off"
+            continue
+            shift
+            ;;
+        "help")
+            echo -e " --offline -> desativa a pesquisa via internet\n --clearOn ou --con -> ativa o clearMode\n\n ***DENTRO DO TRADUTOR***\n\n clearOn -> ativa o clearMode\n clearOff -> desativa o clearMode\n offline -> desativa a pesquisa via internet\n online -> ativa a pesquisa na internet\n dict -> abre o dicionário\n"
+            echo "***PRESS ANY BUTTON TO CONTINUE***"
+            read button
+            if [ "$clearMode" == "on" ]; then
+                clear
+            fi
+            continue
+            shift
+            ;;
+        "change")
+            exit
+            shift
+            ;;
+    esac
+    if grep -q "$word" "$dicionario"; then
+        echo "***WORD ALREADY ADDED***"
+        echo ""
+        grep "$word" "$dicionario"
+        echo ""
+        traduzido=true
+    fi
+    if [ $traduzido == true ]; then
+        echo "you want a web search? (yes || y || sim || s) or (anything for no)"
+        echo ""
+        read response
+        case $response in
+            "yes")
+                shift
+                ;;
+            "y")
+                shift
+                ;;
+            "sim")
+                shift
+                ;;
+            "s")
+                shift
+                ;;
+            *)
+                if [ "$clearMode" == "on" ]; then
+                    clear
+                fi
+                continue
+                ;;
+        esac
+        echo ""
+    fi
+    echo "««TRADUCTION»»"
+    echo ""
+    if [ $mode == "online" ]; then
+        trans -e google :pt "$word"
+        echo ""
+    elif [ $mode == "offline" ]; then
+        trans.py $word
+        echo ""
+    fi
+    echo "««ADD_WORD»»"
+    read palavra
+    if [ "$palavra" == "cancel" ] || [ "$palavra" == "" ]; then
+        echo "***ADDITION CANCELLED***"
+        echo ""
+        if [ "$clearMode" == "on" ]; then
+            clear
+        fi
+        continue
+    fi
+    echo "$word ---- $palavra" >> $dicionario
+    if [ "$clearMode" == "on" ]; then
+        clear
+    fi
+done
+

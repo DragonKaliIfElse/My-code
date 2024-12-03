@@ -1,0 +1,15 @@
+#!/bin/bash
+prompt=false
+while [[ "$1" != "" ]]; do
+    case $1 in
+        --prompt)
+            prompt=true
+            shift
+            ;;
+    esac
+done
+if [ $prompt == true ]; then
+    ssh -D 1080 ubuntu@152.67.32.173 -i /home/dragon/Downloads/.ssh/ssh-key-2024-11-22.key
+else
+    ssh -D 1080 -f -N ubuntu@152.67.32.173 -i /home/dragon/Downloads/.ssh/ssh-key-2024-11-22.key
+fi

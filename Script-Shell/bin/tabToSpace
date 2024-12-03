@@ -1,0 +1,5 @@
+#!/bin/bash
+agrs=("$@")
+for arg in "${args[@]}"; do
+	python3 /usr/local/bin/tabToSpace.py $arg
+done

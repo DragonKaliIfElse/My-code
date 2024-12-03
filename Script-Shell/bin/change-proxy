@@ -1,0 +1,19 @@
+#!/bin/python3
+import sys
+if __name__ == "__main__":
+    old_proxy = input("Qual o Proxy atual?\n")
+    new_proxy = input("Qual o Proxy novo?\n")
+    for i in range(len(sys.argv)):
+        if i == 0: continue;
+        config = sys.argv[i]
+        with open(config, 'r') as file:
+            configs = file.read()
+        new_config = configs.replace(old_proxy, new_proxy)
+        try:
+            with open(config, 'w') as file:
+                retorno = file.write(new_config)
+        except Exception as error:
+            with open(config, 'w') as file:
+                file.write(configs)
+            raise error
+

@@ -1,0 +1,18 @@
+#!/bin/bash
+args=("$@")
+for arg in "${args[@]}"; do
+    case $arg in
+        *.cpp)
+            execute="${arg/.cpp/}"
+            g++ "$@" -o "$execute"
+            ./"$execute"
+            ;;
+        *.java)
+            execute="${arg/.java/}"
+            javac "$@"
+            java "$execute"
+            ;;
+        *.py)
+            python3 "$@"
+    esac
+done

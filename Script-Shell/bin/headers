@@ -1,0 +1,25 @@
+#!/bin/bash
+while [[ "$1" != "" ]]; do
+	case $1 in
+		--help)
+			shift
+			echo "ADCIONE AS LINHAS DO HEADER NO ARQUIVO CABECALHO ANTES DE FORMATAR"
+			exit
+			;;
+		-h)
+			shift
+			echo "ADCIONE AS LINHAS DO HEADER NO ARQUIVO CABECALHO ANTES DE FORMATAR"
+			exit
+			;;
+		*)
+        	echo "Opção inválida: $1"
+        	exit
+        	;;
+	esac
+done
+
+texto=$(python3 /home/dragon/Python/Headers/headers.py)
+rm cabecalho
+cat cabecalho2
+rm cabecalho2
+

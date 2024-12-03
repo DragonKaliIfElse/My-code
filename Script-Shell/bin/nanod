@@ -1,0 +1,23 @@
+#!/bin/bash
+args=("$@")
+
+for arg in "${args[@]}"; do
+	if [[ -e $arg ]];then
+		python3 /usr/local/bin/spaceToTab.py $arg
+	fi
+done
+
+file=""
+for arg in "${args[@]}"; do
+	file="$file $arg"
+done
+
+nano $file
+
+for arg in "${args[@]}"; do
+	if [[ -e $arg ]];then
+		python3 /usr/local/bin/tabToSpace.py $arg
+	fi
+done
+
+

@@ -1,0 +1,42 @@
+#!/bin/bash
+clear=false
+while [[ "$1" != "" ]]; do
+    case "$1" in
+        --clearOn)
+            clear=true
+            shift
+            ;;
+    esac
+done
+while [ true ];do
+    if [[ $clear == true ]]; then
+        clear
+    fi
+	read -p "Palavra para traduzir para o inglês: " input
+    echo ""
+    case "$input" in
+    "change")
+        clear
+        exit
+        shift
+        ;;
+    "clear")
+        clear
+        continue
+        shift
+        ;;
+    "clearOn")
+        clear=true
+        clear
+        continue
+        shift
+        ;;
+    "clearOff")
+        clear=false
+        continue
+        shift
+        ;;
+    esac
+	trans :en "$input"
+    read add
+done
