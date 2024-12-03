@@ -16,10 +16,13 @@ def main():
         match sys.argv[i]:
             case '-h':
                 print("GEOLOCALIZATION SYSTEM BASED IN IP ADDRESS\n")
-                print("-h, --help -> display help\n-l, --localization -> display lozalization of ip address in the map\n")
+                print("-h, --help         -> display help\n")
+                print("-l, --localization -> display lozalization of ip address in the map\n")
                 return 0
             case '--help':
-                print("-h, --help -> display help\n-l, --localization -> display lozalization of ip address in the map\n")
+                print("GEOLOCALIZATION SYSTEM BASED IN IP ADDRESS\n")
+                print("-h, --help         -> display help\n")
+                print("-l, --localization -> display lozalization of ip address in the map\n")
                 return 0
             case '-l':
                 localization = True

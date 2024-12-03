@@ -1,12 +1,13 @@
 #!/bin/bash
-echo "chose the language for translate to 'pt' or 'en'"
-read language
+language="pt"
 while true
 do
     if [ "$language" == "pt" ]; then
-        tradutor
+        proxychains tradutor --clearOn
+        language="en"
     elif [ "$language" == "en" ]; then
-        translate
+        proxychains translate --clearOn
+        language="pt"
     else
         echo "invalid argument: $language"
         read language
