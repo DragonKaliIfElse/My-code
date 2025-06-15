@@ -1,0 +1,42 @@
+🧠 1. Subdomain Discovery / Recon
+Ferramenta	    Descrição
+amass           Bruteforce + passive + active DNS (muito completo)
+subfinder	    Muito rápido, excelente para recon contínuo
+assetfinder	    Ideal para wordlists simples, recon passivo
+httpx	        Scanner de vivo/morto com status code, title, etc.
+
+✅ Combinadas com: dnsx, nmap, naabu, massdns.
+
+🔍 2. Web Fuzzing / Endpoint Discovery
+Ferramenta	    Descrição
+ffuf	        Fuzzing de paths, parâmetros, subdomínios
+dirsearch	    Brute force de diretórios
+gobuster	    Alternativa leve para diretórios/subdomínios
+katana	        Crawler rápido, extrai links, JS, params
+
+✅ Usadas para encontrar áreas como /admin, /api, /internal, etc.
+
+🧪 3. Vulnerability Discovery
+Ferramenta	    Tipo	                            Uso
+nuclei	        Template-based scanner	            Encontra CVEs, misconfigs, etc.
+dalfox	        XSS scanner	                        Muito bom para DOM + reflected
+XSStrike        XSS scanner
+kiterunner	    API fuzzing (OpenAPI/dicionários)	Excelente pra fuzz de APIs REST
+sqlmap	        SQLi	                            Automa SQLi com detecção e exploit
+wafw00f	        Detecta WAF	                        Saber onde pisar leve ou pesado
+
+✅ nuclei com bons templates é obrigatório hoje em recon de bounty.
+
+📦 4. JS Analysis & Param Hunting
+Ferramenta	    Função
+LinkFinder	    Extrai endpoints de arquivos JS
+JSParser	    Extrai URLs de JS
+arjun	        Enumera parâmetros escondidos em endpoints
+paramspider	    Caça parâmetros em páginas e JS
+
+🧰 5. Outros que ajudam MUITO
+Ferramenta	        Função
+waybackurls / gau	Resgata URLs antigas (Wayback, Common Crawl)
+dnsx	            Resolução DNS rápida em massa
+unfurl	            Analisa e quebra URLs em componentes úteis
+qsreplace           Automatiza payloads substituindo parâmetros
