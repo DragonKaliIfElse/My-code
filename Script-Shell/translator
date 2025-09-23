@@ -3,10 +3,10 @@ language="pt"
 while true
 do
     if [ "$language" == "pt" ]; then
-        proxychains tradutor --clearOn
+        tradutor --clearOn
         language="en"
     elif [ "$language" == "en" ]; then
-        proxychains translate --clearOn
+        translate --clearOn
         language="pt"
     else
         echo "invalid argument: $language"

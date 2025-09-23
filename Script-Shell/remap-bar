@@ -1,2 +1,0 @@
-#!/bin/bash
-xmodmap -e "keycode 46 = l L l L bar"

@@ -1,3 +1,0 @@
-#!/bin/bash
-rm /home/dragon/.count
-shutdown now

@@ -1,6 +1,5 @@
 #!/bin/bash
-dicionario=/home/dragon/Python/Tradutor/Dicionário
-mode="online"
+mode="offline"
 traduzido=false
 clearMode="off"
 while [[ "$1" != "" ]]; do
@@ -8,6 +7,10 @@ while [[ "$1" != "" ]]; do
         --offline)
             shift
             mode="offline"
+            ;;
+        --online)
+            shift
+            mode="online"
             ;;
         --clearOn)
             shift
@@ -42,14 +45,6 @@ while true; do
     case $word in 
         "clear")
             clear
-            continue
-            shift
-            ;;
-        "dict")
-            Dicionario
-            if [ "$clearMode" == "on" ]; then
-                clear
-            fi
             continue
             shift
             ;;
@@ -110,13 +105,6 @@ while true; do
             shift
             ;;
     esac
-    if grep -q "$word" "$dicionario"; then
-        echo "***WORD ALREADY ADDED***"
-        echo ""
-        grep "$word" "$dicionario"
-        echo ""
-        traduzido=true
-    fi
     if [ $traduzido == true ]; then
         echo "you want a web search? (yes || y || sim || s) or (anything for no)"
         echo ""
@@ -147,24 +135,19 @@ while true; do
     echo ""
     if [ $mode == "online" ]; then
         trans -e google :pt "$word"
-        echo ""
+            echo ""
     elif [ $mode == "offline" ]; then
         trans.py $word
         echo ""
     fi
-    echo "««ADD_WORD»»"
+    echo "««WAITING»»"
     read palavra
     if [ "$palavra" == "cancel" ] || [ "$palavra" == "" ]; then
-        echo "***ADDITION CANCELLED***"
         echo ""
         if [ "$clearMode" == "on" ]; then
             clear
         fi
         continue
-    fi
-    echo "$word ---- $palavra" >> $dicionario
-    if [ "$clearMode" == "on" ]; then
-        clear
     fi
 done
 

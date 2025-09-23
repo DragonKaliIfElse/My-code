@@ -1,6 +1,0 @@
-#!/bin/bash
-echo "Report the name of python-lib"
-read lib
-echo "Report the name of function"
-read func
-grep "$func" /home/dragon/.local/lib/python3.11/site-packages/$lib/ -r
