@@ -3,7 +3,8 @@ from tkinter import ttk, messagebox, filedialog
 import pandas as pd
 import re
 from pathlib import Path
-import xlsxScan as xs
+import xlsxEditor as xe
+from openpyxl import load_workbook
 
 # Variáveis globais para armazenar os dados
 dados_orcamento = {}
@@ -78,8 +79,7 @@ def mostrar_detalhamento_custos():
     
     # Criar abas apenas para categorias preenchidas
     for categoria, valor in dados_centro_custo.items():
-        if valor and float(valor) > 0:
-            categorias_preenchidas.append(categoria)
+        categorias_preenchidas.append(categoria)
     
     # Mapear nomes das categorias para exibição
     nomes_categorias = {
@@ -115,11 +115,7 @@ def acha_lc(df, expressao):
     else:
         print("Expressão não encontrada")
         return []
-
-def salvar_relatorio():
-    arquivo_editavel = xs.criar_copia_editavel(arquivo)
-    df, wb, ws = xs.carregar_dados_com_formato(arquivo_editavel, "ENVIO P CLIENTE")
-    
+def salvar_cabecalho(df,ws):
     for dados in dados_orcamento:
         posicoes = acha_lc(df,dados)
         if not posicoes:
@@ -128,11 +124,14 @@ def salvar_relatorio():
         linha+=2
         coluna+=1
         if dados == "Enviado em ":
-            xs.editar_celula(arquivo_editavel, "ENVIO P CLIENTE", linha=linha, coluna=coluna, valor=f'Enviado em {dados_orcamento[dados]}')
+            celula = ws.cell(row=linha,column=coluna)
+            celula.value = f'Enviado em {dados_orcamento[dados]}'
         elif dados == "DATA DE INICIO" or dados == "DATA DE TÉRMINO" or dados == "GERENTE DO PROJETO:" or dados == "RECEBIDO EM:" or dados == "APROVADO EM:":
-            xs.editar_celula(arquivo_editavel, "ENVIO P CLIENTE", linha=linha, coluna=coluna+2, valor=dados_orcamento[dados])
+            celula = ws.cell(row=linha,column=coluna+2)
+            celula.value = dados_orcamento[dados]
         else:
-            xs.editar_celula(arquivo_editavel, "ENVIO P CLIENTE", linha=linha, coluna=coluna+1, valor=dados_orcamento[dados])
+            celula = ws.cell(row=linha,column=coluna+1)
+            celula.value = dados_orcamento[dados]
        
     for dados in dados_centro_custo:
         posicoes = acha_lc(df,dados)
@@ -141,60 +140,74 @@ def salvar_relatorio():
         linha, coluna = posicoes[0]
         linha+=2
         coluna+=1
-        xs.editar_celula(arquivo_editavel, "ENVIO P CLIENTE", linha=linha, coluna=coluna+6, valor=f'R$ {dados_centro_custo[dados]}')
-    
+        celula = ws.cell(row=linha,column=coluna+6)
+        celula.value = f'R$ {dados_centro_custo[dados]}'
+
+def store_by_regex(df,ws,regex,indice):
+            posicoes = acha_lc(df,regex)
+            line,_ = posicoes[indice]
+            line+=2
+            data_line = xe.store_line_data(ws,line,10)
+            return data_line
+
+def salvar_relatorio():
+    arquivo_editavel = xe.cop_sheet(str(arquivo))
+    wb = load_workbook(arquivo_editavel)
+    ws = wb["ENVIO P CLIENTE"]
+    df = pd.read_excel(arquivo_editavel,"ENVIO P CLIENTE")
+    salvar_cabecalho(df,ws)
     global linhas_categoria
-    for i, dados1 in enumerate(categorias_preenchidas):
-        if i == 0:
-            posicoes = acha_lc(df,dados1)
-            line_base,_ = posicoes[1]
-            line_base+=4
-            pass
+    contagem = {}
+    for linha in linhas_categoria:
+        categoria = linha['entries']['categoria']
+        if categoria in contagem:
+            contagem[categoria] += 1
         else:
-            edit = str(arquivo).split('.')[0]
-            arquivo_editavel = xs.criar_copia_editavel(f'{edit}_copia_editavel.xlsx')
-            df, wb, ws = xs.carregar_dados_com_formato(arquivo_editavel, "ENVIO P CLIENTE")
-            posicoes = acha_lc(df,dados1)
+            contagem[categoria] = 1
+    for i, categoria in enumerate(categorias_preenchidas):
+        wb = load_workbook(arquivo_editavel)
+        ws = wb["ENVIO P CLIENTE"]
+        df = pd.read_excel(arquivo_editavel,"ENVIO P CLIENTE")
+        posicoes = acha_lc(df,categoria)
+        line_category,_ = posicoes[1]
+        line_category +=2
+        if i == 0:
+            base_line = line_category + 1
+            subtotal_line = store_by_regex(df,ws,'SUBTOTAL',0)
+            subtotal_line_ultimo = store_by_regex(df,ws,'SUBTOTAL',-1)
+            imposto_line = store_by_regex(df,ws,'IMPOSTOS',-1)
+            posicoes = acha_lc(df,'TOTAL GERAL')
+            total_line,_ = posicoes[-1]
+            total_line+=2
+            total_line_data = xe.store_line_data(ws,total_line,10)
+            lastline = total_line+2
+        details_line = line_category + 1
+
+        ws.merge_cells(start_row=line_category, start_column=1, end_row=line_category, end_column=9)
+        xe.copy_line_format(ws,base_line,details_line,10,True)
+        print(categoria)
         if not posicoes:
             pass
-        line, coluna = posicoes[1]
-        line+=5
-        coluna+=1
-        for i, linha in enumerate(linhas_categoria):
-            categoria = linha["entries"]["categoria"]
-            if categoria == dados1:
-                pass
-            else: continue;
-            item = linha["entries"]["item"].get()
-            tipo = linha["entries"]["tipo"].get()
-            descricao = linha["entries"]["descricao"].get()
-            qtde = linha["entries"]["qtde"].get()
-            diaria = linha["entries"]["diaria"].get()
-            subtotal = linha["entries"]["subtotal"].get()
-            total = linha["entries"]["total"].get()
-            incluir = linha["entries"]["total"].get()
-            
-            xs.adicionar_linhas_simples(arquivo_editavel,"ENVIO P CLIENTE",posicao=line)
-            primeiro = False
-            fc=0
-            ec=0
-            for i in range(1,9+1):
-                if xs.is_merged(ws,line,i) and primeiro is False:
-                    primeiro = True
-                    fc = i
-                if xs.is_merged(ws,line,i):
-                    ec+=i
-                else:
-                    continue
-            try:
-                ws.unmerge_cells(start_row=line,start_column=fc,end_row=line,end_column=ec)
-                print(f'unmerge linha {line} de {fc}:{ec}')
-            except Exception as e:
-                print(f'erro:{e}')
-                print(f'fc:{fc} ec:{ec}')
-                pass
-    wb.save(arquivo)      
+        line = line_category+2
+        ws.insert_rows(idx=line, amount=contagem[categoria])
+        wb.save(arquivo_editavel)
+        wb = load_workbook(arquivo_editavel)
+        ws = wb["ENVIO P CLIENTE"]
+        for linha in range(line, line+contagem[categoria]):
+            xe.copy_line_format(ws,base_line,linha,10)
+        xe.apply_line_data(ws,line+contagem[categoria],subtotal_line,True)
+    df = pd.read_excel(arquivo_editavel,"ENVIO P CLIENTE")
+    posicoes = acha_lc(df,'TOTAL GERAL')
+    tot_line,_ = posicoes[-1]
+    tot_line+=2
+    imp_line = tot_line - 1
+    sub_line = imp_line -1
+    xe.apply_line_data(ws,sub_line,subtotal_line_ultimo,True)
+    xe.apply_line_data(ws,imp_line,imposto_line,True)
+    xe.apply_line_data(ws,tot_line,total_line_data,True)
+    wb.save(arquivo_editavel)
     messagebox.showinfo("Sucesso", "Relatório Gerado com sucesso!")
+        
     return
 
 def escolhe_arquivo():
