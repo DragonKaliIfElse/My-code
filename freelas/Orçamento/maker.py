@@ -1,277 +1,1079 @@
 import tkinter as tk
 from tkinter import ttk, messagebox, filedialog
+from typing import Dict, List, Tuple, Optional, Any
 import pandas as pd
 import re
 from pathlib import Path
 import xlsxEditor as xe
 from openpyxl import load_workbook
+from openpyxl.workbook import Workbook
+from datetime import datetime
 
-# Variáveis globais para armazenar os dados
-dados_orcamento = {}
-dados_centro_custo = {}
-linhas_categoria = []
-categorias_preenchidas = []
 
-def salvar_orcamento():
-    global dados_orcamento
-    dados_orcamento = {
-        "CLIENTE:": entry_cliente.get(),
-        "PROJETO/EVENTO:": entry_evento.get(),
-        "SOLICITADO POR:": entry_solicitado.get(),
-        "TELEFONE:": entry_telefone.get(),
-        "E-MAIL:": entry_email.get(),
-        "GERENTE DO PROJETO:": entry_gerente.get(),
-        "RECEBIDO EM:": entry_recebido.get(),
-        "APROVADO EM:": entry_aprovado.get(),
-        "DATA DE INICIO": entry_inicio.get(),
-        "DATA DE TÉRMINO": entry_termino.get(),
-        "Enviado em ": entry_enviado.get()
-    }
-
-    if not dados_orcamento["CLIENTE:"] or not dados_orcamento["PROJETO/EVENTO:"]:
-        messagebox.showerror("Erro", "Preencha pelo menos o nome do Cliente e o Projeto/Evento.")
-        return
-
-    messagebox.showinfo("Sucesso", "Orçamento salvo com sucesso! Agora preencha o Orçamento Resumido.")
-    mostrar_centro_custo()
-
-def mostrar_centro_custo():
-    frame_orcamento.pack_forget()
-    frame_centro_custo.pack(fill="both", expand=True)
-
-def voltar_orcamento():
-    frame_centro_custo.pack_forget()
-    frame_orcamento.pack(fill="both", expand=True)
-
-def resetar_orcamento():
-    frame_detalhamento.pack_forget()
-    frame_orcamento.pack(fill="both", expand=True)
-
-def salvar_centro_custo():
-    global dados_centro_custo
-    dados_centro_custo = {
-        "ESTRUTURA & CENOGRAFIA": entry_estrutura.get(),
-        "ATRAÇÕES": entry_atracoes.get(),
-        "ALIMENTOS E BEBIDAS": entry_alimentos.get(),
-        "LOCAÇÃO DE EQUIPAMENTOS": entry_equipamentos.get(),
-        "SERVIÇOS": entry_servicos.get(),
-        "EQUIPE/PRODUÇÃO": entry_equipe.get(),
-        "TAXAS/LEGALIZAÇÃO": entry_taxas.get(),
-        "DIVULGAÇÃO": entry_divulgacao.get(),
-        "OUTROS": entry_outros.get()
-    }
-
-    valores_preenchidos = any(dados_centro_custo.values())
-    if not valores_preenchidos:
-        messagebox.showwarning("Aviso", "Nenhum valor foi preenchido no Orçamento Resumido.")
-        return
-
-    messagebox.showinfo("Sucesso", "Orçamento Resumido salvo! Agora detalhe os itens por categoria.")
-    mostrar_detalhamento_custos()
-
-def mostrar_detalhamento_custos():
-    frame_centro_custo.pack_forget()
-    frame_detalhamento.pack(fill="both", expand=True)
+class DatabaseViewer:
+    """Classe para visualização e edição da base de dados"""
     
-    # Limpar abas anteriores
-    for aba in notebook.tabs():
-        notebook.forget(aba)
-    
-    # Criar abas apenas para categorias preenchidas
-    for categoria, valor in dados_centro_custo.items():
-        categorias_preenchidas.append(categoria)
-    
-    # Mapear nomes das categorias para exibição
-    nomes_categorias = {
-        "ESTRUTURA & CENOGRAFIA": "ESTRUTURA & CENOGRAFIA",
-        "ATRAÇÕES": "ATRAÇÕES",
-        "ALIMENTOS E BEBIDAS": "ALIMENTOS E BEBIDAS",
-        "LOCAÇÃO DE EQUIPAMENTOS": "LOCAÇÃO DE EQUIPAMENTOS",
-        "SERVIÇOS": "SERVIÇOS",
-        "EQUIPE/PRODUÇÃO": "EQUIPE/PRODUÇÃO",
-        "TAXAS/LEGALIZAÇÃO": "TAXAS/LEGALIZAÇÃO",
-        "DIVULGAÇÃO": "DIVULGAÇÃO",
-        "OUTROS": "OUTROS"
-    }
-    
-    # Criar uma aba para cada categoria preenchida
-    for categoria in categorias_preenchidas:
-        criar_aba_categoria(nomes_categorias[categoria])
-
-def acha_lc(df, expressao):
-    padrao = f".*{re.escape(expressao)}.*"  # evita erro com caracteres especiais
-
-    posicoes = []
-
-    # percorre todas as células do DataFrame
-    for linha in range(len(df)):
-        for coluna in range(len(df.columns)):
-            valor = str(df.iat[linha, coluna])  # pega valor da célula como string
-            if re.search(padrao, valor):
-                posicoes.append((linha, coluna))
-
-    if posicoes:
-        return posicoes
-    else:
-        print("Expressão não encontrada")
-        return []
-def salvar_cabecalho(df,ws):
-    for dados in dados_orcamento:
-        posicoes = acha_lc(df,dados)
-        if not posicoes:
-            pass
-        linha, coluna = posicoes[0]
-        linha+=2
-        coluna+=1
-        if dados == "Enviado em ":
-            celula = ws.cell(row=linha,column=coluna)
-            celula.value = f'Enviado em {dados_orcamento[dados]}'
-        elif dados == "DATA DE INICIO" or dados == "DATA DE TÉRMINO" or dados == "GERENTE DO PROJETO:" or dados == "RECEBIDO EM:" or dados == "APROVADO EM:":
-            celula = ws.cell(row=linha,column=coluna+2)
-            celula.value = dados_orcamento[dados]
-        else:
-            celula = ws.cell(row=linha,column=coluna+1)
-            celula.value = dados_orcamento[dados]
-       
-    for dados in dados_centro_custo:
-        posicoes = acha_lc(df,dados)
-        if not posicoes:
-            pass
-        linha, coluna = posicoes[0]
-        linha+=2
-        coluna+=1
-        celula = ws.cell(row=linha,column=coluna+6)
-        celula.value = f'R$ {dados_centro_custo[dados]}'
-
-def store_by_regex(df,ws,regex,indice):
-            posicoes = acha_lc(df,regex)
-            line,_ = posicoes[indice]
-            line+=2
-            data_line = xe.store_line_data(ws,line,10)
-            return data_line
-
-def salvar_relatorio():
-    arquivo_editavel = xe.cop_sheet(str(arquivo))
-    wb = load_workbook(arquivo_editavel)
-    ws = wb["ENVIO P CLIENTE"]
-    df = pd.read_excel(arquivo_editavel,"ENVIO P CLIENTE")
-    salvar_cabecalho(df,ws)
-    global linhas_categoria
-    contagem = {}
-    for linha in linhas_categoria:
-        categoria = linha['entries']['categoria']
-        if categoria in contagem:
-            contagem[categoria] += 1
-        else:
-            contagem[categoria] = 1
-    for i, categoria in enumerate(categorias_preenchidas):
-        wb = load_workbook(arquivo_editavel)
-        ws = wb["ENVIO P CLIENTE"]
-        df = pd.read_excel(arquivo_editavel,"ENVIO P CLIENTE")
-        posicoes = acha_lc(df,categoria)
-        line_category,_ = posicoes[1]
-        line_category +=2
-        if i == 0:
-            base_line = line_category + 1
-            subtotal_line = store_by_regex(df,ws,'SUBTOTAL',0)
-            subtotal_line_ultimo = store_by_regex(df,ws,'SUBTOTAL',-1)
-            imposto_line = store_by_regex(df,ws,'IMPOSTOS',-1)
-            posicoes = acha_lc(df,'TOTAL GERAL')
-            total_line,_ = posicoes[-1]
-            total_line+=2
-            total_line_data = xe.store_line_data(ws,total_line,10)
-            lastline = total_line+2
-        details_line = line_category + 1
-
-        ws.merge_cells(start_row=line_category, start_column=1, end_row=line_category, end_column=9)
-        xe.copy_line_format(ws,base_line,details_line,10,True)
-        print(categoria)
-        if not posicoes:
-            pass
-        line = line_category+2
-        ws.insert_rows(idx=line, amount=contagem[categoria])
-        wb.save(arquivo_editavel)
-        wb = load_workbook(arquivo_editavel)
-        ws = wb["ENVIO P CLIENTE"]
-        for linha in range(line, line+contagem[categoria]):
-            xe.copy_line_format(ws,base_line,linha,10)
-        xe.apply_line_data(ws,line+contagem[categoria],subtotal_line,True)
-    df = pd.read_excel(arquivo_editavel,"ENVIO P CLIENTE")
-    posicoes = acha_lc(df,'TOTAL GERAL')
-    tot_line,_ = posicoes[-1]
-    tot_line+=2
-    imp_line = tot_line - 1
-    sub_line = imp_line -1
-    xe.apply_line_data(ws,sub_line,subtotal_line_ultimo,True)
-    xe.apply_line_data(ws,imp_line,imposto_line,True)
-    xe.apply_line_data(ws,tot_line,total_line_data,True)
-    wb.save(arquivo_editavel)
-    messagebox.showinfo("Sucesso", "Relatório Gerado com sucesso!")
+    def __init__(self, parent, arquivo):
+        self.parent = parent
+        self.arquivo = arquivo
+        self.df = None
+        self.df_original = None
+        self.tree = None
+        self.frame = None
         
-    return
-
-def escolhe_arquivo():
-    root = tk.Tk()
-    root.withdraw()  # Esconde a janela principal do Tkinter
-    caminho_arquivo = filedialog.askopenfilename(
-        title="Selecione a planilha de orçamentos",
-        filetypes=(("Arquivos de texto", "*.xlsx"), ("Todos os arquivos", "*.*"))
-    )
-    return caminho_arquivo
-
-def criar_aba_categoria(nome_categoria):
-    # Frame principal da aba
-    frame_aba = ttk.Frame(notebook)
-    notebook.add(frame_aba, text=nome_categoria)
+        self.criar_interface()
+        self.carregar_dados()
     
-    # Container com scroll
-    container = ttk.Frame(frame_aba)
-    container.pack(fill="both", expand=True)
-    
-    canvas = tk.Canvas(container)
-    scrollbar = ttk.Scrollbar(container, orient="vertical", command=canvas.yview)
-    scrollable_frame = ttk.Frame(canvas)
-    
-    scrollable_frame.bind(
-        "<Configure>",
-        lambda e: canvas.configure(scrollregion=canvas.bbox("all"))
-    )
-    
-    canvas.create_window((0, 0), window=scrollable_frame, anchor="nw")
-    canvas.configure(yscrollcommand=scrollbar.set)
-    
-    canvas.pack(side="left", fill="both", expand=True)
-    scrollbar.pack(side="right", fill="y")
-    
-    # Cabeçalho da tabela
-    colunas = ["Item", "Tipo", "Descrição", "Qtde", "Diária", "Subtotal", "Total", "Incluir no Orçamento?"]
-    pesos_colunas = [2,2,2,1,1,1,1,1]
-    for i, peso in enumerate(pesos_colunas):
-        scrollable_frame.columnconfigure(i, weight=peso)
-
-    for i, coluna in enumerate(colunas):
-        ttk.Label(scrollable_frame, text=coluna, font=('Arial', 9, 'bold')).grid(
-            row=0, column=i, padx=2, pady=5, sticky="ew"
-        )
-    
-    # Frame para os campos de entrada
-    frame_campos = ttk.Frame(scrollable_frame)
-    frame_campos.grid(row=1, column=0, columnspan=len(colunas), sticky="ew")
-    
-    # Configurar grid weights
-    for i, peso in enumerate(pesos_colunas):
-        frame_campos.columnconfigure(i, weight=peso)
-    
-    # Lista para armazenar as linhas desta categoria
-    
-    def adicionar_linha():
-        global linhas_categoria
-        row_index = len(linhas_categoria) + 1
+    def criar_interface(self):
+        """Cria a interface do visualizador de base de dados"""
+        self.frame = ttk.Frame(self.parent)
         
-        # Frame para uma linha
-        frame_linha = ttk.Frame(frame_campos)
+        # Frame de controles
+        frame_controles = ttk.Frame(self.frame)
+        frame_controles.pack(fill="x", padx=10, pady=5)
+        
+        ttk.Button(frame_controles, text="Recarregar Dados", 
+                  command=self.carregar_dados).pack(side="left", padx=5)
+        ttk.Button(frame_controles, text="Salvar Alterações", 
+                  command=self.salvar_alteracoes).pack(side="left", padx=5)
+        ttk.Button(frame_controles, text="Adicionar Linha", 
+                  command=self.adicionar_linha).pack(side="left", padx=5)
+        ttk.Button(frame_controles, text="Editar Linha Selecionada", 
+                  command=self.editar_linha).pack(side="left", padx=5)
+        ttk.Button(frame_controles, text="Remover Linha Selecionada", 
+                  command=self.remover_linha).pack(side="left", padx=5)
+        ttk.Button(frame_controles, text="Gerar Relatório", 
+                  command=self.gerar_relatorio).pack(side="left", padx=5)
+        
+        # Frame de filtros (apenas evento)
+        frame_filtros = ttk.Frame(self.frame)
+        frame_filtros.pack(fill="x", padx=10, pady=5)
+        
+        ttk.Label(frame_filtros, text="Filtrar por Evento:").pack(side="left", padx=5)
+        self.filtro_evento = ttk.Entry(frame_filtros, width=30)
+        self.filtro_evento.pack(side="left", padx=5)
+        
+        ttk.Button(frame_filtros, text="Aplicar Filtro", 
+                  command=self.aplicar_filtro).pack(side="left", padx=5)
+        ttk.Button(frame_filtros, text="Limpar Filtro", 
+                  command=self.limpar_filtro).pack(side="left", padx=5)
+        
+        # Frame da tabela
+        frame_tabela = ttk.Frame(self.frame)
+        frame_tabela.pack(fill="both", expand=True, padx=10, pady=5)
+    
+    # Criar Treeview com scrollbars
+        self.criar_treeview(frame_tabela) 
+    def criar_treeview(self, parent):
+        """Cria o widget Treeview para exibir os dados"""
+        # Scrollbars
+        v_scrollbar = ttk.Scrollbar(parent, orient="vertical")
+        h_scrollbar = ttk.Scrollbar(parent, orient="horizontal")
+        
+        # Treeview
+        self.tree = ttk.Treeview(parent, 
+                                yscrollcommand=v_scrollbar.set,
+                                xscrollcommand=h_scrollbar.set)
+        
+        v_scrollbar.config(command=self.tree.yview)
+        h_scrollbar.config(command=self.tree.xview)
+        
+        # Layout
+        self.tree.grid(row=0, column=0, sticky="nsew")
+        v_scrollbar.grid(row=0, column=1, sticky="ns")
+        h_scrollbar.grid(row=1, column=0, sticky="ew")
+        
+        parent.grid_rowconfigure(0, weight=1)
+        parent.grid_columnconfigure(0, weight=1)
+        
+        # Bind para edição
+        self.tree.bind("<Double-1>", self.editar_celula)
+    
+   # No método carregar_dados da classe DatabaseViewer, simplifique a conversão de datas:
+# No método carregar_dados da classe DatabaseViewer, substitua por:
+    def carregar_dados(self):
+        """Carrega os dados da planilha"""
+        try:
+            # Tentar carregar a aba LANÇAMENTOS
+            try:
+                self.df_original = pd.read_excel(self.arquivo, sheet_name="LANÇAMENTOS")
+                
+                # Verificar e padronizar nomes das colunas
+                mapeamento_colunas = {
+                    'Inicio': 'Data do Início do Evento',
+                    'Termino': 'Data de Término do Evento', 
+                    'Evento': 'Evento',
+                    'Categoria': 'Categoria',
+                    'Item': 'SubCategoria',
+                    'tipo': 'Descrição',
+                    'descricao': 'Descrição',
+                    'Quantidade': 'Qtde',
+                    'Diária': 'Diária',
+                    'Subtotal': 'Subtotal do Orçamento',
+                    'Total': 'Orçamento Total',
+                    'Incluir': 'Incluir no Orçamento?'
+                }
+                
+                # Renomear colunas existentes
+                colunas_existentes = self.df_original.columns
+                for coluna_antiga, coluna_nova in mapeamento_colunas.items():
+                    if coluna_antiga in colunas_existentes:
+                        self.df_original.rename(columns={coluna_antiga: coluna_nova}, inplace=True)
+                
+                # Garantir que todas as colunas necessárias existam
+                colunas_necessarias = [
+                    'Data do Início do Evento', 'Data de Término do Evento', 'Evento', 
+                    'Categoria', 'SubCategoria', 'Descrição', 'Qtde', 'Diária', 
+                    'Subtotal do Orçamento', 'Orçamento Total', 'Incluir no Orçamento?'
+                ]
+                
+                for coluna in colunas_necessarias:
+                    if coluna not in self.df_original.columns:
+                        self.df_original[coluna] = ""
+                
+                # Reordenar colunas
+                colunas_ordenadas = [col for col in colunas_necessarias if col in self.df_original.columns]
+                self.df_original = self.df_original[colunas_ordenadas]
+                
+                # Converter colunas de data para string no formato dd/mm/aaaa
+                colunas_data = ['Data do Início do Evento', 'Data de Término do Evento']
+                for coluna in colunas_data:
+                    if coluna in self.df_original.columns:
+                        if pd.api.types.is_datetime64_any_dtype(self.df_original[coluna]):
+                            self.df_original[coluna] = self.df_original[coluna].dt.strftime('%d/%m/%Y')
+                        else:
+                            self.df_original[coluna] = self.df_original[coluna].astype(str)
+                
+                self.df = self.df_original.copy()
+                print("Colunas carregadas:", list(self.df.columns))
+                
+            except Exception as e:
+                print(f"Erro ao carregar LANÇAMENTOS: {e}")
+                # Se não existir, criar DataFrame vazio com colunas padrão
+                colunas = [
+                    'Data do Início do Evento', 'Data de Término do Evento', 'Evento', 
+                    'Categoria', 'SubCategoria', 'Descrição', 'Qtde', 'Diária', 
+                    'Subtotal do Orçamento', 'Orçamento Total', 'Incluir no Orçamento?'
+                ]
+                self.df_original = pd.DataFrame(columns=colunas)
+                self.df = self.df_original.copy()
+            
+            self.atualizar_treeview()
+            messagebox.showinfo("Sucesso", "Dados carregados com sucesso!")
+            
+        except Exception as e:
+            messagebox.showerror("Erro", f"Erro ao carregar dados: {str(e)}")
+    def aplicar_filtro(self):
+        """Aplica filtros nos dados"""
+        try:
+            filtro_evento = self.filtro_evento.get().strip()
+            
+            if not filtro_evento:
+                self.df = self.df_original.copy()
+            else:
+                self.df = self.df_original.copy()
+                
+                # Usar expressão regular para busca mais flexível
+                mask = self.df['Evento'].astype(str).str.contains(filtro_evento, case=False, na=False, regex=True)
+                self.df = self.df[mask]
+        
+            self.atualizar_treeview()
+            messagebox.showinfo("Sucesso", f"Filtro aplicado! {len(self.df)} registros encontrados.")
+        except Exception as e:
+            messagebox.showerror("Erro", f"Erro ao aplicar filtro: {str(e)}")
+
+   # No método limpar_filtro da classe DatabaseViewer:
+    def limpar_filtro(self):
+        """Limpa todos os filtros"""
+        self.filtro_evento.delete(0, tk.END)
+        self.df = self.df_original.copy()
+        self.atualizar_treeview()
+        messagebox.showinfo("Sucesso", "Filtros limpos!") 
+
+    def atualizar_treeview(self):
+        """Atualiza o Treeview com os dados do DataFrame"""
+        try:
+            # Limpar treeview existente
+            for item in self.tree.get_children():
+                self.tree.delete(item)
+            
+            if self.df.empty:
+                return
+            
+            # Configurar colunas
+            colunas = list(self.df.columns)
+            self.tree["columns"] = colunas
+            self.tree["show"] = "headings"
+            
+            # Configurar cabeçalhos
+            for coluna in colunas:
+                self.tree.heading(coluna, text=coluna)
+                self.tree.column(coluna, width=100, minwidth=50)
+            
+            # Adicionar dados
+            for index, row in self.df.iterrows():
+                valores = [str(row[col]) if pd.notna(row[col]) else "" for col in colunas]
+                self.tree.insert("", "end", values=valores, iid=str(index))
+        except Exception as e:
+            print(f"Erro ao atualizar treeview: {e}")
+    
+    def editar_celula(self, event):
+        """Permite editar células individualmente"""
+        try:
+            selecionados = self.tree.selection()
+            if not selecionados:
+                return
+                
+            item = selecionados[0]
+            coluna = self.tree.identify_column(event.x)
+            if not coluna.startswith('#'):
+                return
+                
+            col_index = int(coluna[1:]) - 1
+            
+            if col_index >= len(self.df.columns):
+                return
+                
+            col_name = self.df.columns[col_index]
+            
+            # Obter valor atual
+            valores_atuais = self.tree.item(item, "values")
+            valor_atual = valores_atuais[col_index]
+            
+            # Criar janela de edição
+            self.criar_janela_edicao(item, col_index, col_name, valor_atual)
+        except Exception as e:
+            messagebox.showerror("Erro", f"Erro ao editar célula: {str(e)}")
+    
+    def editar_linha(self):
+        """Edita a linha completa selecionada"""
+        try:
+            selecionados = self.tree.selection()
+            if not selecionados:
+                messagebox.showwarning("Aviso", "Selecione uma linha para editar.")
+                return
+                
+            item = selecionados[0]
+            index = int(item)
+            
+            # Verificar se o índice existe no DataFrame
+            if index not in self.df.index:
+                messagebox.showerror("Erro", "Índice da linha não encontrado no DataFrame.")
+                return
+            
+            # Obter dados atuais da linha
+            linha_data = self.df.loc[index]
+            
+            # Criar janela de edição completa
+            self.criar_janela_edicao_linha(item, linha_data)
+        except Exception as e:
+            messagebox.showerror("Erro", f"Erro ao editar linha: {str(e)}")
+    
+    def criar_janela_edicao(self, item, col_index, col_name, valor_atual):
+        """Cria janela para edição de célula"""
+        try:
+            janela_edicao = tk.Toplevel(self.frame)
+            janela_edicao.title(f"Editar {col_name}")
+            janela_edicao.geometry("300x150")
+            janela_edicao.transient(self.frame)
+            
+            # Centralizar na tela
+            janela_edicao.update_idletasks()
+            x = self.frame.winfo_rootx() + (self.frame.winfo_width() // 2) - (300 // 2)
+            y = self.frame.winfo_rooty() + (self.frame.winfo_height() // 2) - (150 // 2)
+            janela_edicao.geometry(f"+{x}+{y}")
+            
+            ttk.Label(janela_edicao, text=f"Editar {col_name}:").pack(pady=10)
+            
+            entry_valor = ttk.Entry(janela_edicao, width=30)
+            entry_valor.pack(pady=5)
+            entry_valor.insert(0, valor_atual)
+            entry_valor.focus()
+            
+            def confirmar_edicao():
+                try:
+                    novo_valor = entry_valor.get()
+                    
+                    # Atualizar Treeview
+                    valores = list(self.tree.item(item, "values"))
+                    valores[col_index] = novo_valor
+                    self.tree.item(item, values=valores)
+                    
+                    # Atualizar DataFrame
+                    index = int(item)
+                    self.df.at[index, col_name] = novo_valor
+                    
+                    janela_edicao.destroy()
+                    messagebox.showinfo("Sucesso", "Célula editada com sucesso!")
+                except Exception as e:
+                    messagebox.showerror("Erro", f"Erro ao confirmar edição: {str(e)}")
+            
+            frame_botoes = ttk.Frame(janela_edicao)
+            frame_botoes.pack(pady=10)
+            
+            ttk.Button(frame_botoes, text="Confirmar", 
+                      command=confirmar_edicao).pack(side="left", padx=5)
+            ttk.Button(frame_botoes, text="Cancelar", 
+                      command=janela_edicao.destroy).pack(side="left", padx=5)
+            
+            entry_valor.bind("<Return>", lambda e: confirmar_edicao())
+            
+            # Usar protocolo para evitar problemas com grab_set
+            janela_edicao.protocol("WM_DELETE_WINDOW", janela_edicao.destroy)
+            
+        except Exception as e:
+            messagebox.showerror("Erro", f"Erro ao criar janela de edição: {str(e)}")
+    
+    def criar_janela_edicao_linha(self, item, linha_data):
+        """Cria janela para edição completa da linha"""
+        try:
+            janela_edicao = tk.Toplevel(self.frame)
+            janela_edicao.title("Editar Linha Completa")
+            janela_edicao.geometry("600x400")
+            janela_edicao.transient(self.frame)
+            
+            # Centralizar na tela
+            janela_edicao.update_idletasks()
+            x = self.frame.winfo_rootx() + (self.frame.winfo_width() // 2) - (600 // 2)
+            y = self.frame.winfo_rooty() + (self.frame.winfo_height() // 2) - (400 // 2)
+            janela_edicao.geometry(f"+{x}+{y}")
+            
+            # Frame com scroll
+            container = ttk.Frame(janela_edicao)
+            container.pack(fill="both", expand=True, padx=10, pady=10)
+            
+            canvas = tk.Canvas(container)
+            scrollbar = ttk.Scrollbar(container, orient="vertical", command=canvas.yview)
+            scrollable_frame = ttk.Frame(canvas)
+            
+            scrollable_frame.bind("<Configure>", lambda e: canvas.configure(scrollregion=canvas.bbox("all")))
+            canvas.create_window((0, 0), window=scrollable_frame, anchor="nw")
+            canvas.configure(yscrollcommand=scrollbar.set)
+            
+            canvas.pack(side="left", fill="both", expand=True)
+            scrollbar.pack(side="right", fill="y")
+            
+            # Campos de edição
+            entries = {}
+            for i, coluna in enumerate(self.df.columns):
+                ttk.Label(scrollable_frame, text=f"{coluna}:").grid(row=i, column=0, padx=5, pady=5, sticky="e")
+                entry = ttk.Entry(scrollable_frame, width=40)
+                entry.grid(row=i, column=1, padx=5, pady=5, sticky="ew")
+                valor = str(linha_data[coluna]) if pd.notna(linha_data[coluna]) else ""
+                entry.insert(0, valor)
+                entries[coluna] = entry
+            
+            scrollable_frame.columnconfigure(1, weight=1)
+            
+            def confirmar_edicao():
+                try:
+                    # Atualizar DataFrame
+                    index = int(item)
+                    for coluna, entry in entries.items():
+                        self.df.at[index, coluna] = entry.get()
+                    
+                    # Atualizar Treeview
+                    novos_valores = [entry.get() for entry in entries.values()]
+                    self.tree.item(item, values=novos_valores)
+                    
+                    janela_edicao.destroy()
+                    messagebox.showinfo("Sucesso", "Linha editada com sucesso!")
+                except Exception as e:
+                    messagebox.showerror("Erro", f"Erro ao confirmar edição: {str(e)}")
+            
+            frame_botoes = ttk.Frame(janela_edicao)
+            frame_botoes.pack(fill="x", pady=10)
+            
+            ttk.Button(frame_botoes, text="Confirmar", 
+                      command=confirmar_edicao).pack(side="left", padx=10)
+            ttk.Button(frame_botoes, text="Cancelar", 
+                      command=janela_edicao.destroy).pack(side="left", padx=10)
+            
+            # Usar protocolo para evitar problemas com grab_set
+            janela_edicao.protocol("WM_DELETE_WINDOW", janela_edicao.destroy)
+            
+        except Exception as e:
+            messagebox.showerror("Erro", f"Erro ao criar janela de edição de linha: {str(e)}")
+    
+    def adicionar_linha(self):
+        """Adiciona uma nova linha vazia"""
+        try:
+            # Adicionar linha vazia ao DataFrame
+            nova_linha = {col: "" for col in self.df.columns}
+            novo_index = len(self.df)
+            self.df.loc[novo_index] = nova_linha
+            
+            # Atualizar Treeview
+            valores = ["" for _ in self.df.columns]
+            self.tree.insert("", "end", values=valores, iid=str(novo_index))
+            
+            messagebox.showinfo("Sucesso", "Nova linha adicionada!")
+        except Exception as e:
+            messagebox.showerror("Erro", f"Erro ao adicionar linha: {str(e)}")
+    
+    def remover_linha(self):
+        """Remove a linha selecionada"""
+        try:
+            selecionados = self.tree.selection()
+            if not selecionados:
+                messagebox.showwarning("Aviso", "Selecione uma linha para remover.")
+                return
+            
+            # Confirmar remoção
+            if not messagebox.askyesno("Confirmar", "Tem certeza que deseja remover a(s) linha(s) selecionada(s)?"):
+                return
+            
+            indices_para_remover = []
+            for item in selecionados:
+                indices_para_remover.append(int(item))
+                self.tree.delete(item)
+            
+            # Remover do DataFrame
+            self.df = self.df.drop(indices_para_remover)
+            
+            # Reindexar DataFrame
+            self.df = self.df.reset_index(drop=True)
+            
+            # Atualizar Treeview com novos índices
+            self.atualizar_treeview()
+            
+            messagebox.showinfo("Sucesso", f"{len(selecionados)} linha(s) removida(s) com sucesso!")
+        except Exception as e:
+            messagebox.showerror("Erro", f"Erro ao remover linha: {str(e)}")
+    
+    # No método salvar_alteracoes da classe DatabaseViewer, substitua por:
+    def salvar_alteracoes(self):
+        """Salva as alterações na planilha original - CORRIGIDO: sempre salva dados completos"""
+        try:
+            # SEMPRE salvar o DataFrame original completo, não o filtrado
+            with pd.ExcelWriter(self.arquivo, engine="openpyxl", mode="a", 
+                              if_sheet_exists="replace") as writer:
+                self.df_original.to_excel(writer, sheet_name="LANÇAMENTOS", index=False)
+            
+            messagebox.showinfo("Sucesso", "Alterações salvas com sucesso!")
+            
+        except Exception as e:
+            messagebox.showerror("Erro", f"Erro ao salvar alterações: {str(e)}")
+    def gerar_relatorio(self):
+        """Gera relatório a partir dos dados da base de dados"""
+        try:
+            if self.df.empty:
+                messagebox.showwarning("Aviso", "Não há dados para gerar o relatório.")
+                return
+            
+            # Verificar se há dados necessários
+            colunas_necessarias = ['Evento', 'Categoria', 'Total']
+            for coluna in colunas_necessarias:
+                if coluna not in self.df.columns:
+                    messagebox.showerror("Erro", f"Coluna '{coluna}' não encontrada na base de dados.")
+                    return
+            
+            # Obter dados únicos para o cabeçalho
+            eventos_unicos = self.df['Evento'].unique()
+            if len(eventos_unicos) > 1:
+                messagebox.showwarning("Aviso", "Selecione apenas um evento para gerar o relatório.")
+                return
+            
+            evento = eventos_unicos[0]
+            
+            # Criar dados do orçamento a partir da base de dados
+            dados_orcamento = {
+                "CLIENTE:": "",  # Pode ser preenchido manualmente se necessário
+                "PROJETO/EVENTO:": str(evento),
+                "SOLICITADO POR:": "",
+                "TELEFONE:": "",
+                "E-MAIL:": "",
+                "GERENTE DO PROJETO:": "",
+                "RECEBIDO EM:": "",
+                "APROVADO EM:": "",
+                "DATA DE INICIO": "",
+                "DATA DE TÉRMINO": "",
+                "Enviado em ": datetime.now().strftime("%d/%m/%Y")
+            }
+            
+            # Calcular totais por categoria
+            try:
+                # Converter coluna Total para numérico
+                self.df['Total'] = pd.to_numeric(self.df['Total'], errors='coerce').fillna(0)
+                totais_categoria = self.df.groupby('Categoria')['Total'].sum()
+            except Exception as e:
+                print(f"Erro ao calcular totais: {e}")
+                totais_categoria = pd.Series()
+            
+            dados_centro_custo = {
+                "ESTRUTURA & CENOGRAFIA": totais_categoria.get("ESTRUTURA & CENOGRAFIA", 0),
+                "ATRAÇÕES": totais_categoria.get("ATRAÇÕES", 0),
+                "ALIMENTOS E BEBIDAS": totais_categoria.get("ALIMENTOS E BEBIDAS", 0),
+                "LOCAÇÃO DE EQUIPAMENTOS": totais_categoria.get("LOCAÇÃO DE EQUIPAMENTOS", 0),
+                "SERVIÇOS": totais_categoria.get("SERVIÇOS", 0),
+                "EQUIPE/PRODUÇÃO": totais_categoria.get("EQUIPE/PRODUÇÃO", 0),
+                "TAXAS/LEGALIZAÇÃO": totais_categoria.get("TAXAS/LEGALIZAÇÃO", 0),
+                "DIVULGAÇÃO": totais_categoria.get("DIVULGAÇÃO", 0),
+                "OUTROS": totais_categoria.get("OUTROS", 0)
+            }
+            
+            print("Dados para relatório:")
+            print("Orçamento:", dados_orcamento)
+            print("Centro de custo:", dados_centro_custo)
+            
+            # Gerar relatório
+            self._gerar_relatorio_excel(dados_orcamento, dados_centro_custo, self.df)
+            
+        except Exception as e:
+            messagebox.showerror("Erro", f"Erro ao gerar relatório: {str(e)}")
+            print(f"Erro detalhado: {e}")
+    
+   # No método _gerar_relatorio_excel da classe DatabaseViewer, substitua o código atual por:
+# No método _gerar_relatorio_excel da classe DatabaseViewer, substitua a parte de preenchimento dos itens:
+    def _gerar_relatorio_excel(self, dados_orcamento, dados_centro_custo, df_itens):
+        """Gera o relatório Excel com os dados fornecidos - CORRIGIDO: não sobrescreve formatação"""
+        try:
+            arquivo_editavel = xe.cop_sheet(str(self.arquivo))
+            wb = load_workbook(arquivo_editavel)
+            ws = wb["ENVIO P CLIENTE"]
+            df = pd.read_excel(arquivo_editavel, sheet_name="ENVIO P CLIENTE")
+            
+            # Salvar cabeçalho (APENAS VALORES, sem formatação)
+            self._salvar_cabecalho_excel(df, ws, dados_orcamento, dados_centro_custo)
+            wb.save(arquivo_editavel)
+            
+            # Processar categorias
+            contagem = df_itens.groupby('Categoria').size().to_dict()
+            
+            categorias_para_processar = [
+                "ESTRUTURA & CENOGRAFIA",
+                "ATRAÇÕES",
+                "ALIMENTOS E BEBIDAS", 
+                "LOCAÇÃO DE EQUIPAMENTOS",
+                "SERVIÇOS",
+                "EQUIPE/PRODUÇÃO",
+                "TAXAS/LEGALIZAÇÃO",
+                "DIVULGAÇÃO",
+                "OUTROS"
+            ]
+            
+            # Inicializar variáveis com valores padrão
+            linha_base = None
+            subtotal_line = {}
+            subtotal_line_ultimo = {}
+            imposto_line = {}
+            total_line_data = {}
+            ultima_linha = None
+            
+            categorias_processadas = 0
+            
+            for i, categoria in enumerate(categorias_para_processar):
+                if categoria not in contagem or contagem[categoria] == 0:
+                    continue
+                    
+                wb = load_workbook(arquivo_editavel)
+                ws = wb["ENVIO P CLIENTE"]
+                df = pd.read_excel(arquivo_editavel, sheet_name="ENVIO P CLIENTE")
+                
+                posicoes = self._encontrar_posicoes_celula(df, categoria)
+                if len(posicoes) < 2:
+                    print(f"Categoria {categoria} não encontrada na planilha")
+                    continue
+                    
+                linha_categoria, _ = posicoes[1]
+                linha_categoria += 2
+                
+                if categorias_processadas == 0:
+                    linha_base = linha_categoria + 1
+                    subtotal_line = self._obter_dados_linha(df, ws, 'SUBTOTAL', 0)
+                    subtotal_line_ultimo = self._obter_dados_linha(df, ws, 'SUBTOTAL', -1)
+                    imposto_line = self._obter_dados_linha(df, ws, 'IMPOSTOS', -1)
+                    
+                    posicoes_total = self._encontrar_posicoes_celula(df, 'TOTAL GERAL')
+                    if not posicoes_total:
+                        print("TOTAL GERAL não encontrado")
+                        continue
+                    linha_total, _ = posicoes_total[-1]
+                    linha_total += 2
+                    total_line_data = xe.store_line_data(ws, linha_total, 10)
+                    ultima_linha = linha_total + 2
+
+                linha_detalhes = linha_categoria + 1
+                
+                # NÃO mesclar células para preservar formatação original
+                # NÃO copiar formatação para preservar estilo original da tabela
+                
+                linha = linha_categoria + 2
+                ws.insert_rows(linha, contagem[categoria])
+                wb.save(arquivo_editavel)
+                
+                wb = load_workbook(arquivo_editavel)
+                ws = wb["ENVIO P CLIENTE"]
+                
+                # NÃO copiar formatação para preservar estilo original
+
+                # Preencher dados dos itens (APENAS VALORES)
+                indice = 0
+                itens_categoria = df_itens[df_itens['Categoria'] == categoria]
+                
+                for _, item in itens_categoria.iterrows():
+                    # Preencher APENAS os valores, sem formatação
+                    celula = ws.cell(row=linha + indice, column=1)
+                    celula.value = item.get('SubCategoria', '')
+                    
+                    celula = ws.cell(row=linha + indice, column=2)
+                    celula.value = ""  # Tipo não usado mais
+                    
+                    celula = ws.cell(row=linha + indice, column=3)
+                    celula.value = item.get('Descrição', '')
+                    
+                    celula = ws.cell(row=linha + indice, column=5)
+                    celula.value = item.get('Qtde', '')
+                    
+                    celula = ws.cell(row=linha + indice, column=6)
+                    celula.value = item.get('Diária', '')
+                    
+                    celula = ws.cell(row=linha + indice, column=7)
+                    celula.value = item.get('Subtotal do Orçamento', '')
+                    
+                    celula = ws.cell(row=linha + indice, column=8)
+                    celula.value = item.get('Orçamento Total', '')
+                    
+                    celula = ws.cell(row=linha + indice, column=9)
+                    celula.value = item.get('Incluir no Orçamento?', '')
+                    
+                    indice += 1
+
+                # Aplicar dados da linha de subtotal (APENAS VALORES)
+                if subtotal_line:
+                    for col_idx, valor in subtotal_line.items():
+                        if col_idx.isdigit():
+                            col = int(col_idx)
+                            celula = ws.cell(row=linha + contagem[categoria], column=col)
+                            celula.value = valor
+                    wb.save(arquivo_editavel)
+                
+                categorias_processadas += 1
+
+            # Aplicar totais finais (APENAS VALORES)
+            if categorias_processadas > 0 and subtotal_line_ultimo and imposto_line and total_line_data:
+                wb = load_workbook(arquivo_editavel)
+                ws = wb["ENVIO P CLIENTE"]
+                df = pd.read_excel(arquivo_editavel, sheet_name="ENVIO P CLIENTE")
+                
+                posicoes_total = self._encontrar_posicoes_celula(df, 'TOTAL GERAL')
+                if posicoes_total:
+                    linha_total, _ = posicoes_total[-1]
+                    linha_total += 2
+                    linha_imposto = linha_total - 1
+                    linha_subtotal = linha_imposto - 1
+
+                    # Aplicar APENAS valores, sem formatação
+                    for col_idx, valor in subtotal_line_ultimo.items():
+                        if col_idx.isdigit():
+                            col = int(col_idx)
+                            celula = ws.cell(row=linha_subtotal, column=col)
+                            celula.value = valor
+                    
+                    for col_idx, valor in imposto_line.items():
+                        if col_idx.isdigit():
+                            col = int(col_idx)
+                            celula = ws.cell(row=linha_imposto, column=col)
+                            celula.value = valor
+                    
+                    for col_idx, valor in total_line_data.items():
+                        if col_idx.isdigit():
+                            col = int(col_idx)
+                            celula = ws.cell(row=linha_total, column=col)
+                            celula.value = valor
+                    
+                    wb.save(arquivo_editavel)
+
+            messagebox.showinfo("Sucesso", "Relatório Gerado com sucesso!")
+
+        except Exception as e:
+            messagebox.showerror("Erro", f"Erro ao gerar relatório Excel: {str(e)}")
+            print(f"Erro detalhado ao gerar Excel: {e}")
+    def _salvar_cabecalho_excel(self, df, ws, dados_orcamento, dados_centro_custo):
+        """Salva os dados do cabeçalho na planilha Excel"""
+        for dado in dados_orcamento:
+            posicoes = self._encontrar_posicoes_celula(df, dado)
+            if not posicoes:
+                continue
+                
+            linha, coluna = posicoes[0]
+            linha += 2
+            coluna += 1
+            
+            celula = ws.cell(row=linha, column=coluna)
+            
+            if dado == "Enviado em ":
+                celula.value = f'Enviado em {dados_orcamento[dado]}'
+            elif dado in ["DATA DE INICIO", "DATA DE TÉRMINO", "GERENTE DO PROJETO:", "RECEBIDO EM:", "APROVADO EM:"]:
+                celula = ws.cell(row=linha, column=coluna + 2)
+                celula.value = dados_orcamento[dado]
+            else:
+                celula = ws.cell(row=linha, column=coluna + 1)
+                celula.value = dados_orcamento[dado]
+
+        for dado in dados_centro_custo:
+            posicoes = self._encontrar_posicoes_celula(df, dado)
+            if not posicoes:
+                continue
+                
+            linha, coluna = posicoes[0]
+            linha += 2
+            coluna += 1
+            
+            celula = ws.cell(row=linha, column=coluna + 6)
+            valor = dados_centro_custo[dado]
+            if pd.notna(valor) and valor != "":
+                try:
+                    celula.value = f'R$ {float(valor):.2f}'
+                except:
+                    celula.value = f'R$ {valor}'
+    
+    @staticmethod
+    def _encontrar_posicoes_celula(df: pd.DataFrame, expressao: str) -> List[Tuple[int, int]]:
+        """Encontra posições de células que correspondem à expressão"""
+        padrao = f".*{re.escape(expressao)}.*"
+        posicoes = []
+
+        for linha in range(len(df)):
+            for coluna in range(len(df.columns)):
+                valor = str(df.iat[linha, coluna])
+                if re.search(padrao, valor):
+                    posicoes.append((linha, coluna))
+
+        return posicoes if posicoes else []
+    
+    def _obter_dados_linha(self, df: pd.DataFrame, ws: Any, regex: str, indice: int) -> Dict[str, List]:
+        """Obtém dados de uma linha específica baseada em regex"""
+        posicoes = self._encontrar_posicoes_celula(df, regex)
+        if not posicoes or len(posicoes) <= indice:
+            return {}
+        linha, _ = posicoes[indice]
+        linha += 2
+        return xe.store_line_data(ws, linha, 10)
+class BudgetApp:
+    """Classe principal da aplicação de orçamento"""
+    
+    def __init__(self):
+        self.dados_orcamento: Dict[str, str] = {}
+        self.dados_centro_custo: Dict[str, str] = {}
+        self.linhas_categoria: List[Dict] = []
+        self.categorias_preenchidas: List[str] = []
+        self.arquivo: Optional[Path] = None
+        
+        self._setup_paths()
+        self._setup_ui()
+        
+    def _setup_paths(self) -> None:
+        """Configura os caminhos de arquivo"""
+        pasta_atual = Path.cwd()
+        self.arquivo = pasta_atual / "ORÇAMENTO DE EVENTOS.xlsx"
+        
+        if not self.arquivo.exists():
+            self.arquivo = Path(self.escolhe_arquivo())
+
+    def _setup_ui(self) -> None:
+        """Configura a interface gráfica"""
+        self.janela = tk.Tk()
+        self.janela.title("Sistema de Orçamento")
+        self.janela.geometry("1000x700")
+
+        self._criar_menu_principal()
+        self._criar_frames()
+        self._criar_widgets_orcamento()
+        self._criar_widgets_centro_custo()
+        self._criar_widgets_detalhamento()
+        self._criar_widgets_base_dados()
+        
+        # Iniciar com o frame do orçamento visível
+        self.frame_centro_custo.pack_forget()
+        self.frame_detalhamento.pack_forget()
+        self.frame_base_dados.pack_forget()
+
+    def _criar_menu_principal(self):
+        """Cria o menu principal da aplicação"""
+        menubar = tk.Menu(self.janela)
+        self.janela.config(menu=menubar)
+        
+        menu_arquivo = tk.Menu(menubar, tearoff=0)
+        menubar.add_cascade(label="Arquivo", menu=menu_arquivo)
+        menu_arquivo.add_command(label="Base de Dados", command=self.mostrar_base_dados)
+        menu_arquivo.add_separator()
+        menu_arquivo.add_command(label="Sair", command=self.janela.quit)
+        
+        menu_navegacao = tk.Menu(menubar, tearoff=0)
+        menubar.add_cascade(label="Navegação", menu=menu_navegacao)
+        menu_navegacao.add_command(label="Orçamento", command=self.mostrar_orcamento)
+        menu_navegacao.add_command(label="Centro de Custo", command=self.mostrar_centro_custo)
+        menu_navegacao.add_command(label="Detalhamento", command=self.mostrar_detalhamento_custos)
+
+    def _criar_frames(self) -> None:
+        """Cria os frames principais da aplicação"""
+        self.frame_orcamento = ttk.Frame(self.janela)
+        self.frame_centro_custo = ttk.Frame(self.janela)
+        self.frame_detalhamento = ttk.Frame(self.janela)
+        self.frame_base_dados = ttk.Frame(self.janela)
+        
+        self.frame_orcamento.pack(fill="both", expand=True)
+
+    def _criar_widgets_base_dados(self):
+        """Cria a interface da base de dados"""
+        self.viewer_base_dados = DatabaseViewer(self.frame_base_dados, self.arquivo)
+        self.viewer_base_dados.frame.pack(fill="both", expand=True)
+        
+        # Botão para voltar
+        frame_controles = ttk.Frame(self.frame_base_dados)
+        frame_controles.pack(fill="x", pady=10)
+        
+        ttk.Button(frame_controles, text="Voltar para Orçamento", 
+                  command=self.mostrar_orcamento).pack(side="left", padx=10)
+
+    def mostrar_base_dados(self):
+        """Mostra a tela da base de dados"""
+        self.frame_orcamento.pack_forget()
+        self.frame_centro_custo.pack_forget()
+        self.frame_detalhamento.pack_forget()
+        self.frame_base_dados.pack(fill="both", expand=True)
+        
+        # Recarregar dados ao mostrar
+        self.viewer_base_dados.carregar_dados()
+
+    def _criar_scrollable_frame(self, parent: tk.Widget) -> Tuple[tk.Canvas, ttk.Frame]:
+        """Cria um frame com scrollbar"""
+        container = ttk.Frame(parent)
+        container.pack(fill="both", expand=True)
+
+        canvas = tk.Canvas(container)
+        v_scrollbar = ttk.Scrollbar(container, orient="vertical", command=canvas.yview)
+        h_scrollbar = ttk.Scrollbar(container, orient="horizontal", command=canvas.xview)
+        scrollable_frame = ttk.Frame(canvas)
+
+        scrollable_frame.bind("<Configure>", lambda e: canvas.configure(scrollregion=canvas.bbox("all")))
+        canvas.create_window((0, 0), window=scrollable_frame, anchor="nw")
+        canvas.configure(yscrollcommand=v_scrollbar.set, xscrollcommand=h_scrollbar.set)
+
+        canvas.pack(side="left", fill="both", expand=True)
+        v_scrollbar.pack(side="right", fill="y")
+        h_scrollbar.pack(side="bottom", fill="x")
+
+        return canvas, scrollable_frame
+
+    def _criar_widgets_orcamento(self) -> None:
+        """Cria os widgets do frame de orçamento"""
+        canvas, scrollable_frame = self._criar_scrollable_frame(self.frame_orcamento)
+        canvas.bind("<MouseWheel>", self._on_mousewheel)
+
+        scrollable_frame.columnconfigure(1, weight=1)
+
+        # Campos do orçamento
+        campos_orcamento = [
+            ("CLIENTE:", "entry_cliente"),
+            ("PROJETO/EVENTO:", "entry_evento"),
+            ("SOLICITADO POR:", "entry_solicitado"),
+            ("TELEFONE:", "entry_telefone"),
+            ("E-MAIL:", "entry_email"),
+            ("GERENTE DO PROJETO:", "entry_gerente"),
+            ("RECEBIDO EM:", "entry_recebido"),
+            ("APROVADO EM:", "entry_aprovado"),
+            ("DATA DE INICIO:", "entry_inicio"),
+            ("DATA DE TÉRMINO:", "entry_termino"),
+            ("Enviado em ", "entry_enviado")
+        ]
+
+        self.entries_orcamento = {}
+        for i, (label_text, entry_name) in enumerate(campos_orcamento):
+            ttk.Label(scrollable_frame, text=label_text).grid(row=i, column=0, padx=5, pady=5, sticky="e")
+            entry = ttk.Entry(scrollable_frame, width=40)
+            entry.grid(row=i, column=1, padx=5, pady=5, sticky="ew")
+            self.entries_orcamento[entry_name] = entry
+
+        # Botões do orçamento
+        button_frame = ttk.Frame(scrollable_frame)
+        button_frame.grid(row=len(campos_orcamento), column=0, columnspan=2, pady=20)
+
+        ttk.Button(button_frame, text="Salvar e Continuar", command=self.salvar_orcamento).pack(side="left", padx=10)
+        ttk.Button(button_frame, text="Limpar", command=self.limpar_campos).pack(side="left", padx=10)
+
+    def _criar_widgets_centro_custo(self) -> None:
+        """Cria os widgets do frame de centro de custo"""
+        canvas, scrollable_frame = self._criar_scrollable_frame(self.frame_centro_custo)
+        canvas.bind("<MouseWheel>", self._on_mousewheel_centro_custo)
+
+        scrollable_frame.columnconfigure(1, weight=1)
+
+        # Categorias do centro de custo
+        categorias = [
+            "ESTRUTURA & CENOGRAFIA R$",
+            "ATRAÇÕES R$",
+            "ALIMENTOS E BEBIDAS R$",
+            "LOCAÇÃO DE EQUIPAMENTOS R$",
+            "SERVIÇOS R$",
+            "EQUIPE/PRODUÇÃO R$",
+            "TAXAS/LEGALIZAÇÃO R$",
+            "DIVULGAÇÃO R$",
+            "OUTROS R$"
+        ]
+
+        self.entries_centro_custo = {}
+        for i, categoria in enumerate(categorias):
+            ttk.Label(scrollable_frame, text=categoria, font=('Arial', 10, 'bold')).grid(
+                row=i, column=0, padx=5, pady=8, sticky="e"
+            )
+            entry = ttk.Entry(scrollable_frame, width=20)
+            entry.grid(row=i, column=1, padx=5, pady=8, sticky="ew")
+            self.entries_centro_custo[categoria] = entry
+
+        # Botões do centro de custo
+        button_frame = ttk.Frame(scrollable_frame)
+        button_frame.grid(row=len(categorias), column=0, columnspan=2, pady=20)
+
+        ttk.Button(button_frame, text="Salvar e Continuar", command=self.salvar_centro_custo).pack(side="left", padx=10)
+        ttk.Button(button_frame, text="Voltar", command=self.voltar_orcamento).pack(side="left", padx=10)
+
+    def _criar_widgets_detalhamento(self) -> None:
+        """Cria os widgets do frame de detalhamento"""
+        # Notebook para as abas de categorias
+        self.notebook = ttk.Notebook(self.frame_detalhamento)
+        self.notebook.pack(fill="both", expand=True, padx=10, pady=10)
+
+        # Botões do frame de detalhamento
+        button_frame = ttk.Frame(self.frame_detalhamento)
+        button_frame.pack(fill="x", pady=10)
+
+        ttk.Button(button_frame, text="Novo Orçamento", command=self.finalizar_orcamento).pack(side="left", padx=10)
+        ttk.Button(button_frame, text="Gerar Relatório", command=self.salvar_relatorio).pack(side="left", padx=10)
+        ttk.Button(button_frame, text="Voltar", command=self.voltar_centro_custo).pack(side="left", padx=10)
+
+    # Métodos de negócio
+    def salvar_orcamento(self) -> None:
+        """Salva os dados do orçamento"""
+        self.dados_orcamento = {
+            "CLIENTE:": self.entries_orcamento["entry_cliente"].get(),
+            "PROJETO/EVENTO:": self.entries_orcamento["entry_evento"].get(),
+            "SOLICITADO POR:": self.entries_orcamento["entry_solicitado"].get(),
+            "TELEFONE:": self.entries_orcamento["entry_telefone"].get(),
+            "E-MAIL:": self.entries_orcamento["entry_email"].get(),
+            "GERENTE DO PROJETO:": self.entries_orcamento["entry_gerente"].get(),
+            "RECEBIDO EM:": self.entries_orcamento["entry_recebido"].get(),
+            "APROVADO EM:": self.entries_orcamento["entry_aprovado"].get(),
+            "DATA DE INICIO": self.entries_orcamento["entry_inicio"].get(),
+            "DATA DE TÉRMINO": self.entries_orcamento["entry_termino"].get(),
+            "Enviado em ": self.entries_orcamento["entry_enviado"].get()
+        }
+
+        if not self.dados_orcamento["CLIENTE:"] or not self.dados_orcamento["PROJETO/EVENTO:"]:
+            messagebox.showerror("Erro", "Preencha pelo menos o nome do Cliente e o Projeto/Evento.")
+            return
+
+        messagebox.showinfo("Sucesso", "Orçamento salvo com sucesso! Agora preencha o Orçamento Resumido.")
+        self.mostrar_centro_custo()
+
+    def salvar_centro_custo(self) -> None:
+        """Salva os dados do centro de custo"""
+        self.dados_centro_custo = {
+            "ESTRUTURA & CENOGRAFIA": self.entries_centro_custo["ESTRUTURA & CENOGRAFIA R$"].get(),
+            "ATRAÇÕES": self.entries_centro_custo["ATRAÇÕES R$"].get(),
+            "ALIMENTOS E BEBIDAS": self.entries_centro_custo["ALIMENTOS E BEBIDAS R$"].get(),
+            "LOCAÇÃO DE EQUIPAMENTOS": self.entries_centro_custo["LOCAÇÃO DE EQUIPAMENTOS R$"].get(),
+            "SERVIÇOS": self.entries_centro_custo["SERVIÇOS R$"].get(),
+            "EQUIPE/PRODUÇÃO": self.entries_centro_custo["EQUIPE/PRODUÇÃO R$"].get(),
+            "TAXAS/LEGALIZAÇÃO": self.entries_centro_custo["TAXAS/LEGALIZAÇÃO R$"].get(),
+            "DIVULGAÇÃO": self.entries_centro_custo["DIVULGAÇÃO R$"].get(),
+            "OUTROS": self.entries_centro_custo["OUTROS R$"].get()
+        }
+
+        if not any(self.dados_centro_custo.values()):
+            messagebox.showwarning("Aviso", "Nenhum valor foi preenchido no Orçamento Resumido.")
+            return
+
+        messagebox.showinfo("Sucesso", "Orçamento Resumido salvo! Agora detalhe os itens por categoria.")
+        self.mostrar_detalhamento_custos()
+
+    def mostrar_centro_custo(self) -> None:
+        """Mostra o frame de centro de custo"""
+        self.frame_orcamento.pack_forget()
+        self.frame_centro_custo.pack(fill="both", expand=True)
+
+    def voltar_orcamento(self) -> None:
+        """Volta para o frame de orçamento"""
+        self.frame_centro_custo.pack_forget()
+        self.frame_orcamento.pack(fill="both", expand=True)
+
+    def mostrar_detalhamento_custos(self) -> None:
+        """Mostra o frame de detalhamento de custos"""
+        self.frame_centro_custo.pack_forget()
+        self.frame_detalhamento.pack(fill="both", expand=True)
+
+        # Limpar abas anteriores
+        for aba in self.notebook.tabs():
+            self.notebook.forget(aba)
+
+        # Criar abas apenas para categorias preenchidas
+        self.categorias_preenchidas = [
+            categoria for categoria, valor in self.dados_centro_custo.items() if valor
+        ]
+
+        # Mapear nomes das categorias para exibição
+        nomes_categorias = {
+            "ESTRUTURA & CENOGRAFIA": "ESTRUTURA & CENOGRAFIA",
+            "ATRAÇÕES": "ATRAÇÕES",
+            "ALIMENTOS E BEBIDAS": "ALIMENTOS E BEBIDAS",
+            "LOCAÇÃO DE EQUIPAMENTOS": "LOCAÇÃO DE EQUIPAMENTOS",
+            "SERVIÇOS": "SERVIÇOS",
+            "EQUIPE/PRODUÇÃO": "EQUIPE/PRODUÇÃO",
+            "TAXAS/LEGALIZAÇÃO": "TAXAS/LEGALIZAÇÃO",
+            "DIVULGAÇÃO": "DIVULGAÇÃO",
+            "OUTROS": "OUTROS"
+        }
+
+        # Criar uma aba para cada categoria preenchida
+        for categoria in self.categorias_preenchidas:
+            self._criar_aba_categoria(nomes_categorias[categoria])
+
+    def _criar_aba_categoria(self, nome_categoria: str) -> None:
+        """Cria uma aba para detalhamento de categoria"""
+        frame_aba = ttk.Frame(self.notebook)
+        self.notebook.add(frame_aba, text=nome_categoria)
+
+        canvas, scrollable_frame = self._criar_scrollable_frame(frame_aba)
+
+        # Cabeçalho da tabela
+        colunas = ["Item", "Tipo", "Descrição", "Qtde", "Diária", "Subtotal", "Total", "Incluir no Orçamento?"]
+        pesos_colunas = [2, 2, 3, 2, 2, 2, 2, 2]
+        
+        for i, peso in enumerate(pesos_colunas):
+            scrollable_frame.columnconfigure(i, weight=peso)
+
+        for i, coluna in enumerate(colunas):
+            ttk.Label(scrollable_frame, text=coluna, font=('Arial', 9, 'bold')).grid(
+                row=0, column=i, padx=2, pady=5, sticky="ew"
+            )
+
+        # Frame para os campos de entrada
+        frame_campos = ttk.Frame(scrollable_frame)
+        frame_campos.grid(row=1, column=0, columnspan=len(colunas), sticky="ew")
+
+        for i, peso in enumerate(pesos_colunas):
+            frame_campos.columnconfigure(i, weight=peso)
+
+        # Botões da aba
+        btn_frame = ttk.Frame(scrollable_frame)
+        btn_frame.grid(row=2, column=0, columnspan=4, pady=10, sticky="w")
+
+        ttk.Button(btn_frame, text="+ Adicionar Linha", 
+                  command=lambda: self._adicionar_linha(frame_campos, nome_categoria, pesos_colunas, colunas)).pack(side="left")
+        ttk.Button(btn_frame, text=f"Salvar {nome_categoria}", 
+                  command=lambda: self._salvar_categoria(nome_categoria)).pack(side="left", padx=10)
+
+        # Adicionar primeira linha automaticamente
+        self._adicionar_linha(frame_campos, nome_categoria, pesos_colunas, colunas)
+
+    def _adicionar_linha(self, parent: tk.Widget, categoria: str, pesos_colunas: List[int], colunas: List[str]) -> None:
+        """Adiciona uma nova linha de entrada na categoria"""
+        row_index = len(self.linhas_categoria) + 1
+
+        frame_linha = ttk.Frame(parent)
         frame_linha.grid(row=row_index, column=0, columnspan=len(colunas), sticky="ew", pady=1)
-        
+
         for i, peso in enumerate(pesos_colunas):
             frame_linha.columnconfigure(i, weight=peso)
 
@@ -301,15 +1103,14 @@ def criar_aba_categoria(nome_categoria):
         var_incluir = tk.BooleanVar(value=True)
         check_incluir = ttk.Checkbutton(frame_linha, variable=var_incluir)
         check_incluir.grid(row=0, column=7, padx=2)
-        
-        # Configurar weights para expansão
+
         for i in range(len(colunas)):
             frame_linha.columnconfigure(i, weight=1)
-        
+
         linha_data = {
             "frame": frame_linha,
             "entries": {
-                "categoria": nome_categoria,
+                "categoria": categoria,
                 "item": entry_item,
                 "tipo": entry_tipo,
                 "descricao": entry_descricao,
@@ -320,265 +1121,389 @@ def criar_aba_categoria(nome_categoria):
                 "incluir": var_incluir
             }
         }
-        
-        linhas_categoria.append(linha_data)
 
-    def salvar_categoria():
-        # Coletar dados da categoria
+        self.linhas_categoria.append(linha_data)
+
+        # No método _salvar_categoria da classe BudgetApp, garanta que as datas sejam salvas no formato correto:
+        # No método _salvar_categoria da classe BudgetApp, simplifique as datas:
+        # No método _salvar_categoria da classe BudgetApp, substitua por:
+    def _salvar_categoria(self, nome_categoria: str) -> None:
+        """Salva os dados da categoria específica"""
         itens_categoria = []
-        for linha in linhas_categoria:
-            if linha["entries"]["incluir"].get() == 1:
-                linha["entries"]["incluir"] = "Sim"
-            else:
-                linha["entries"]["incluir"] = "Não"
-            item_data = {
-                "categoria": nome_categoria,
-                "item": linha["entries"]["item"].get(),
-                "tipo": linha["entries"]["tipo"].get(),
-                "descricao": linha["entries"]["descricao"].get(),
-                "qtde": linha["entries"]["qtde"].get(),
-                "diaria": linha["entries"]["diaria"].get(),
-                "subtotal": linha["entries"]["subtotal"].get(),
-                "total": linha["entries"]["total"].get(),
-                "incluir": linha["entries"]["incluir"]
+        
+        for linha in self.linhas_categoria:
+            if linha["entries"]["categoria"] == nome_categoria:
+                incluir = "Sim" if linha["entries"]["incluir"].get() else "Não"
+                item_data = {
+                    "categoria": nome_categoria,
+                    "item": linha["entries"]["item"].get(),
+                    "tipo": linha["entries"]["tipo"].get(),
+                    "descricao": linha["entries"]["descricao"].get(),
+                    "qtde": linha["entries"]["qtde"].get(),
+                    "diaria": linha["entries"]["diaria"].get(),
+                    "subtotal": linha["entries"]["subtotal"].get(),
+                    "total": linha["entries"]["total"].get(),
+                    "incluir": incluir
                 }
-            itens_categoria.append(item_data)
-        dados=[]
+                itens_categoria.append(item_data)
+
+        dados = []
         for item in itens_categoria:
             dados.append({
-                "Inicio": dados_orcamento['DATA DE INICIO'],
-                "Termino": dados_orcamento['DATA DE TÉRMINO'],
-                "Evento": dados_orcamento['PROJETO/EVENTO:'],
+                "Data do Início do Evento": self.dados_orcamento['DATA DE INICIO'],
+                "Data de Término do Evento": self.dados_orcamento['DATA DE TÉRMINO'],
+                "Evento": self.dados_orcamento['PROJETO/EVENTO:'],
                 "Categoria": item['categoria'],
-                "Item": item['item'],
-                "tipo": item['tipo'],
-                "Quantidade": item['qtde'],
+                "SubCategoria": item['item'],
+                "Descrição": item['descricao'],
+                "Qtde": item['qtde'],
                 "Diária": item['diaria'],
-                "Subtotal": item['subtotal'],
-                "Total": item['total'],
-                "Incluir": item['incluir']})
-        
-        lancamento="LANÇAMENTOS_FORMATADO"
-        df_final = pd.DataFrame(dados)
-        try:
-            df_existente = pd.read_excel(arquivo, sheet_name=lancamento)
-            df_final = pd.concat([df_existente,df_final], ignore_index=False)
-        except FileNotFoundError:
-            pass
-        except ValueError:
-            pass
+                "Subtotal do Orçamento": item['subtotal'],
+                "Orçamento Total": item['total'],
+                "Incluir no Orçamento?": item['incluir']
+            })
 
-        with pd.ExcelWriter(arquivo, engine="openpyxl", mode="a", if_sheet_exists="replace") as writer:
+        lancamento = "LANÇAMENTOS"
+        
+        try:
+            # Carregar dados existentes
+            df_existente = pd.read_excel(self.arquivo, sheet_name=lancamento)
+            
+            # Remover dados do evento atual antes de adicionar os novos
+            evento_atual = self.dados_orcamento['PROJETO/EVENTO:']
+            df_existente = df_existente[df_existente['Evento'] != evento_atual]
+            
+            # Combinar com novos dados
+            df_final = pd.concat([df_existente, pd.DataFrame(dados)], ignore_index=True)
+        except (FileNotFoundError, ValueError):
+            # Se a aba não existir, usar apenas os novos dados
+            df_final = pd.DataFrame(datos)
+
+        with pd.ExcelWriter(self.arquivo, engine="openpyxl", mode="a", if_sheet_exists="replace") as writer:
             df_final.to_excel(writer, sheet_name=lancamento, index=False)
 
         messagebox.showinfo("Sucesso", f"Itens da categoria {nome_categoria} salvos com sucesso!")
-    
-    # Botão para adicionar linha
-    btn_adicionar = ttk.Button(scrollable_frame, text="+ Adicionar Linha", command=adicionar_linha)
-    btn_adicionar.grid(row=2, column=0, columnspan=2, pady=10, sticky="w")
-    
-    # Botão para salvar categoria
-    btn_salvar_categoria = ttk.Button(scrollable_frame, text=f"Salvar {nome_categoria}", command=salvar_categoria)
-    btn_salvar_categoria.grid(row=2, column=2, columnspan=2, pady=10)
-    
-    # Adicionar primeira linha automaticamente
-    adicionar_linha()
+    @staticmethod
+    def _encontrar_posicoes_celula(df: pd.DataFrame, expressao: str) -> List[Tuple[int, int]]:
+        """Encontra posições de células que correspondem à expressão"""
+        padrao = f".*{re.escape(expressao)}.*"
+        posicoes = []
 
-def voltar_centro_custo():
-    frame_detalhamento.pack_forget()
-    frame_centro_custo.pack(fill="both", expand=True)
+        for linha in range(len(df)):
+            for coluna in range(len(df.columns)):
+                valor = str(df.iat[linha, coluna])
+                if re.search(padrao, valor):
+                    posicoes.append((linha, coluna))
 
-def finalizar_orcamento():
-    messagebox.showinfo("Sucesso", "Orçamento completo salvo com sucesso!")
-    limpar_campos()
-    resetar_orcamento()
+        return posicoes if posicoes else []
 
-def limpar_campos():
-    # Limpar campos do orçamento
-    for entry in [entry_cliente, entry_evento, entry_solicitado, entry_telefone,
-                  entry_email, entry_gerente, entry_recebido, entry_aprovado,
-                  entry_inicio, entry_termino, entry_enviado]:
-        entry.delete(0, tk.END)
+    def _salvar_cabecalho(self, df: pd.DataFrame, ws: Any) -> None:
+        """Salva os dados do cabeçalho na planilha"""
+        for dado in self.dados_orcamento:
+            posicoes = self._encontrar_posicoes_celula(df, dado)
+            if not posicoes:
+                continue
+                
+            linha, coluna = posicoes[0]
+            linha += 2
+            coluna += 1
+            
+            celula = ws.cell(row=linha, column=coluna)
+            
+            if dado == "Enviado em ":
+                celula.value = f'Enviado em {self.dados_orcamento[dado]}'
+            elif dado in ["DATA DE INICIO", "DATA DE TÉRMINO", "GERENTE DO PROJETO:", "RECEBIDO EM:", "APROVADO EM:"]:
+                celula = ws.cell(row=linha, column=coluna + 2)
+                celula.value = self.dados_orcamento[dado]
+            else:
+                celula = ws.cell(row=linha, column=coluna + 1)
+                celula.value = self.dados_orcamento[dado]
 
-    # Limpar campos do centro de custo
-    for entry in [entry_estrutura, entry_atracoes, entry_alimentos, entry_equipamentos,
-                  entry_servicos, entry_equipe, entry_taxas, entry_divulgacao, entry_outros]:
-        entry.delete(0, tk.END)
+        for dado in self.dados_centro_custo:
+            posicoes = self._encontrar_posicoes_celula(df, dado)
+            if not posicoes:
+                continue
+                
+            linha, coluna = posicoes[0]
+            linha += 2
+            coluna += 1
+            
+            celula = ws.cell(row=linha, column=coluna + 6)
+            celula.value = f'R$ {self.dados_centro_custo[dado]}'
 
-def on_mousewheel(event):
-    canvas.yview_scroll(-1 * int(event.delta / 120), "units")
+    def _obter_dados_linha(self, df: pd.DataFrame, ws: Any, regex: str, indice: int) -> Dict[str, List]:
+        """Obtém dados de uma linha específica baseada em regex"""
+        posicoes = self._encontrar_posicoes_celula(df, regex)
+        linha, _ = posicoes[indice]
+        linha += 2
+        return xe.store_line_data(ws, linha, 10)
 
-def on_mousewheel_centro_custo(event):
-    canvas_centro_custo.yview_scroll(-1 * int(event.delta / 120), "units")
+    def salvar_relatorio(self) -> None:
+        """Salva o relatório completo"""
+        try:
+            arquivo_editavel = xe.cop_sheet(str(self.arquivo))
+            wb = load_workbook(arquivo_editavel)
+            ws = wb["ENVIO P CLIENTE"]
+            df = pd.read_excel(arquivo_editavel, sheet_name="ENVIO P CLIENTE")
+            
+            self._salvar_cabecalho(df, ws)
+            wb.save(arquivo_editavel)
 
-# Janela principal
-pasta_atual = Path.cwd()
-arquivo = pasta_atual / "ORÇAMENTO DE EVENTOS.xlsx"
-if arquivo.exists():
-    pass
-else:
-    arquivo = escolhe_arquivo()
-janela = tk.Tk()
-janela.title("Sistema de Orçamento")
-janela.geometry("800x600")
+            # Processar categorias
+            contagem = {}
+            for linha in self.linhas_categoria:
+                categoria = linha['entries']['categoria']
+                contagem[categoria] = contagem.get(categoria, 0) + 1
 
-# ========== FRAME DO ORÇAMENTO ==========
-frame_orcamento = ttk.Frame(janela)
-frame_orcamento.pack(fill="both", expand=True)
+            nomes_categorias = [
+                "ESTRUTURA & CENOGRAFIA",
+                "ATRAÇÕES",
+                "ALIMENTOS E BEBIDAS",
+                "LOCAÇÃO DE EQUIPAMENTOS",
+                "SERVIÇOS",
+                "EQUIPE/PRODUÇÃO",
+                "TAXAS/LEGALIZAÇÃO",
+                "DIVULGAÇÃO",
+                "OUTROS"
+                ]
+            for i, cat in enumerate(nomes_categorias):
+                try:
+                    if nomes_categorias[i] == contagem[cat]:
+                        continue
+                except:
+                    contagem[cat] = 1
+            print(contagem)
+            for i, categoria in enumerate(nomes_categorias):
+                wb = load_workbook(arquivo_editavel)
+                ws = wb["ENVIO P CLIENTE"]
+                df = pd.read_excel(arquivo_editavel, sheet_name="ENVIO P CLIENTE")
+                
+                posicoes = self._encontrar_posicoes_celula(df, categoria)
+                if not posicoes:
+                    continue
+                linha_categoria, _ = posicoes[1]
+                linha_categoria += 2
+                
+                if i == 0:
+                    linha_base = linha_categoria + 1
+                    subtotal_line = self._obter_dados_linha(df, ws, 'SUBTOTAL', 0)
+                    subtotal_line_ultimo = self._obter_dados_linha(df, ws, 'SUBTOTAL', -1)
+                    imposto_line = self._obter_dados_linha(df, ws, 'IMPOSTOS', -1)
+                    
+                    posicoes_total = self._encontrar_posicoes_celula(df, 'TOTAL GERAL')
+                    linha_total, _ = posicoes_total[-1]
+                    linha_total += 2
+                    total_line_data = xe.store_line_data(ws, linha_total, 10)
+                    ultima_linha = linha_total + 2
 
-# Container com scroll para o orçamento
-frame_container = ttk.Frame(frame_orcamento)
-frame_container.pack(fill="both", expand=True)
+                linha_detalhes = linha_categoria + 1
+                ws.merge_cells(start_row=linha_categoria, start_column=1, end_row=linha_categoria, end_column=9)
+                xe.copy_line_format(ws, linha_base, linha_detalhes, 10, True)
 
-canvas = tk.Canvas(frame_container)
-scrollbar = ttk.Scrollbar(frame_container, orient="vertical", command=canvas.yview)
-scrollable_frame = ttk.Frame(canvas)
+                linha = linha_categoria + 2
+                ws.insert_rows(linha, contagem[categoria])
+                wb.save(arquivo_editavel)
+                
+                wb = load_workbook(arquivo_editavel)
+                ws = wb["ENVIO P CLIENTE"]
+                
+                for linha_idx in range(linha, linha + contagem[categoria]):
+                    xe.copy_line_format(ws, linha_base, linha_idx, 10)
 
-scrollable_frame.bind(
-    "<Configure>",
-    lambda e: canvas.configure(scrollregion=canvas.bbox("all"))
-)
+                indice = 0
+                for linha_data in self.linhas_categoria:
+                    if linha_data["entries"]["categoria"] == categoria:
+                        incluir = 'Sim' if linha_data["entries"]["incluir"].get() else 'Não'
+                        
+                        celula = xe.encontrar_celula_editavel(ws, linha + indice, 1)
+                        celula.value = linha_data["entries"]["item"].get()
+                        
+                        celula = xe.encontrar_celula_editavel(ws, linha + indice, 2)
+                        celula.value = linha_data["entries"]["tipo"].get()
+                        
+                        celula = xe.encontrar_celula_editavel(ws, linha + indice, 3)
+                        celula.value = linha_data["entries"]["descricao"].get()
+                        
+                        celula = xe.encontrar_celula_editavel(ws, linha + indice, 5)
+                        celula.value = linha_data["entries"]["qtde"].get()
+                        
+                        celula = xe.encontrar_celula_editavel(ws, linha + indice, 6)
+                        celula.value = linha_data["entries"]["diaria"].get()
+                        
+                        celula = xe.encontrar_celula_editavel(ws, linha + indice, 7)
+                        celula.value = linha_data["entries"]["subtotal"].get()
+                        
+                        celula = xe.encontrar_celula_editavel(ws, linha + indice, 8)
+                        celula.value = linha_data["entries"]["total"].get()
+                        
+                        celula = xe.encontrar_celula_editavel(ws, linha + indice, 9)
+                        celula.value = incluir
+                        
+                        indice += 1
+                    else:
+                        continue;
 
-canvas.create_window((0, 0), window=scrollable_frame, anchor="nw")
-canvas.configure(yscrollcommand=scrollbar.set)
-canvas.bind("<MouseWheel>", on_mousewheel)
+                xe.apply_line_data(ws, linha + contagem[categoria], subtotal_line, True)
+                wb.save(arquivo_editavel)
 
-canvas.pack(side="left", fill="both", expand=True)
-scrollbar.pack(side="right", fill="y")
+            # Aplicar totais finais
+            ultima_linha_add = linha + contagem['OUTROS']
+            linha_subtotal = ultima_linha_add+3
+            linha_imposto = linha_subtotal+1
+            linha_total = linha_imposto+1
+            ultima_linha = linha_total + 2
 
-# Formulário do orçamento no frame rolável
-scrollable_frame.columnconfigure(1, weight=1)
+            xe.apply_line_data(ws, linha_subtotal, subtotal_line_ultimo, True)
+            xe.apply_line_data(ws, linha_imposto, imposto_line, True)
+            xe.apply_line_data(ws, linha_total, total_line_data, True)
+            ws.merge_cells(start_row=ultima_linha, start_column=1, end_row=ultima_linha, end_column=9)
+            wb.save(arquivo_editavel)
 
-# Campos do orçamento
-campos_orcamento = [
-    ("CLIENTE:", "entry_cliente"),
-    ("PROJETO/EVENTO:", "entry_evento"),
-    ("SOLICITADO POR:", "entry_solicitado"),
-    ("TELEFONE:", "entry_telefone"),
-    ("E-MAIL:", "entry_email"),
-    ("GERENTE DO PROJETO:", "entry_gerente"),
-    ("RECEBIDO EM:", "entry_recebido"),
-    ("APROVADO EM:", "entry_aprovado"),
-    ("DATA DE INICIO:", "entry_inicio"),
-    ("DATA DE TÉRMINO:", "entry_termino"),
-    ("Enviado em ", "entry_enviado")
-]
+            messagebox.showinfo("Sucesso", "Relatório Gerado com sucesso!")
 
-entries_orcamento = {}
-for i, (label_text, entry_name) in enumerate(campos_orcamento):
-    ttk.Label(scrollable_frame, text=label_text).grid(row=i, column=0, padx=5, pady=5, sticky="e")
-    entry = ttk.Entry(scrollable_frame, width=40)
-    entry.grid(row=i, column=1, padx=5, pady=5, sticky="ew")
-    entries_orcamento[entry_name] = entry
+        except Exception as e:
+            messagebox.showerror("Erro", f"Ocorreu um erro ao gerar o relatório: {str(e)}")
+            print(e)
 
-# Atribuir às variáveis globais
-entry_cliente = entries_orcamento["entry_cliente"]
-entry_evento = entries_orcamento["entry_evento"]
-entry_solicitado = entries_orcamento["entry_solicitado"]
-entry_telefone = entries_orcamento["entry_telefone"]
-entry_email = entries_orcamento["entry_email"]
-entry_gerente = entries_orcamento["entry_gerente"]
-entry_recebido = entries_orcamento["entry_recebido"]
-entry_aprovado = entries_orcamento["entry_aprovado"]
-entry_inicio = entries_orcamento["entry_inicio"]
-entry_termino = entries_orcamento["entry_termino"]
-entry_enviado = entries_orcamento["entry_enviado"]
+    @staticmethod
+    def escolhe_arquivo() -> str:
+        """Abre diálogo para escolher arquivo"""
+        root = tk.Tk()
+        root.withdraw()
+        caminho_arquivo = filedialog.askopenfilename(
+            title="Selecione a planilha de orçamentos",
+            filetypes=(("Arquivos Excel", "*.xlsx"), ("Todos os arquivos", "*.*"))
+        )
+        root.destroy()
+        return caminho_arquivo
 
-# Botões do orçamento
-button_frame_orcamento = ttk.Frame(scrollable_frame)
-button_frame_orcamento.grid(row=len(campos_orcamento), column=0, columnspan=2, pady=20)
+    def voltar_centro_custo(self) -> None:
+        """Volta para o centro de custo"""
+        self.frame_detalhamento.pack_forget()
+        self.frame_centro_custo.pack(fill="both", expand=True)
 
-ttk.Button(button_frame_orcamento, text="Salvar e Continuar",
-          command=salvar_orcamento).pack(side="left", padx=10)
-ttk.Button(button_frame_orcamento, text="Limpar",
-          command=limpar_campos).pack(side="left", padx=10)
+    def finalizar_orcamento(self) -> None:
+        """Finaliza o orçamento"""
+        try:
+            # Limpar dados do evento atual da planilha LANÇAMENTOS
+            evento_atual = self.dados_orcamento['PROJETO/EVENTO:']
+            
+            try:
+                df_existente = pd.read_excel(self.arquivo, sheet_name="LANÇAMENTOS")
+                # Manter apenas dados de outros eventos
+                df_final = df_existente[df_existente['Evento'] != evento_atual]
+                
+                with pd.ExcelWriter(self.arquivo, engine="openpyxl", mode="a", if_sheet_exists="replace") as writer:
+                    df_final.to_excel(writer, sheet_name="LANÇAMENTOS", index=False)
+            except (FileNotFoundError, ValueError):
+                pass  # Se não existir a planilha, não faz nada
+                
+        except Exception as e:
+            print(f"Erro ao limpar dados do evento: {e}")
+        
+        messagebox.showinfo("Sucesso", "Orçamento completo salvo com sucesso!")
+        self.limpar_campos()
+        self.resetar_orcamento()
 
-# ========== FRAME DO CENTRO DE CUSTO ==========
-frame_centro_custo = ttk.Frame(janela)
+    def resetar_orcamento(self) -> None:
+        """Reseta para o início do orçamento"""
+        self.frame_detalhamento.pack_forget()
+        self.frame_orcamento.pack(fill="both", expand=True)
 
-# Container com scroll para o centro de custo
-frame_container_centro = ttk.Frame(frame_centro_custo)
-frame_container_centro.pack(fill="both", expand=True)
+    def limpar_campos(self) -> None:
+        """Limpa todos os campos do formulário"""
+        # Limpar campos do orçamento
+        for entry in self.entries_orcamento.values():
+            entry.delete(0, tk.END)
 
-canvas_centro_custo = tk.Canvas(frame_container_centro)
-scrollbar_centro = ttk.Scrollbar(frame_container_centro, orient="vertical", command=canvas_centro_custo.yview)
-scrollable_frame_centro = ttk.Frame(canvas_centro_custo)
+        # Limpar campos do centro de custo
+        for entry in self.entries_centro_custo.values():
+            entry.delete(0, tk.END)
 
-scrollable_frame_centro.bind(
-    "<Configure>",
-    lambda e: canvas_centro_custo.configure(scrollregion=canvas_centro_custo.bbox("all"))
-)
+        # Limpar dados em memória
+        self.dados_orcamento.clear()
+        self.dados_centro_custo.clear()
+        self.linhas_categoria.clear()
+        self.categorias_preenchidas.clear()
+        
+        # Limpar abas do notebook se existirem
+        try:
+            for aba in self.notebook.tabs():
+                self.notebook.forget(aba)
+        except:
+            pass
+    # Handlers de eventos
+    def _on_mousewheel(self, event: tk.Event) -> None:
+        """Handler para scroll do mouse"""
+        self._scroll_canvas(event, "canvas_orcamento")
 
-canvas_centro_custo.create_window((0, 0), window=scrollable_frame_centro, anchor="nw")
-canvas_centro_custo.configure(yscrollcommand=scrollbar_centro.set)
-canvas_centro_custo.bind("<MouseWheel>", on_mousewheel_centro_custo)
+    def _on_mousewheel_centro_custo(self, event: tk.Event) -> None:
+        """Handler para scroll do mouse no centro de custo"""
+        self._scroll_canvas(event, "canvas_centro_custo")
 
-canvas_centro_custo.pack(side="left", fill="both", expand=True)
-scrollbar_centro.pack(side="right", fill="y")
+    def _scroll_canvas(self, event: tk.Event, canvas_name: str) -> None:
+        """Executa scroll no canvas"""
+        canvas = getattr(self, canvas_name, None)
+        if canvas:
+            canvas.yview_scroll(-1 * int(event.delta / 120), "units")
 
-# Formulário do centro de custo
-scrollable_frame_centro.columnconfigure(1, weight=1)
 
-# Categorias do centro de custo
-categorias = [
-    "ESTRUTURA & CENOGRAFIA R$",
-    "ATRAÇÕES R$",
-    "ALIMENTOS E BEBIDAS R$",
-    "LOCAÇÃO DE EQUIPAMENTOS R$",
-    "SERVIÇOS R$",
-    "EQUIPE/PRODUÇÃO R$",
-    "TAXAS/LEGALIZAÇÃO R$",
-    "DIVULGAÇÃO R$",
-    "OUTROS R$"
-]
+    def mostrar_orcamento(self):
+        """Mostra o frame de orçamento"""
+        self.frame_centro_custo.pack_forget()
+        self.frame_detalhamento.pack_forget()
+        self.frame_base_dados.pack_forget()
+        self.frame_orcamento.pack(fill="both", expand=True)
 
-entries_centro_custo = {}
-for i, categoria in enumerate(categorias):
-    ttk.Label(scrollable_frame_centro, text=categoria, font=('Arial', 10, 'bold')).grid(row=i, column=0, padx=5, pady=8, sticky="e")
-    entry = ttk.Entry(scrollable_frame_centro, width=20)
-    entry.grid(row=i, column=1, padx=5, pady=8, sticky="ew")
-    entries_centro_custo[categoria] = entry
+    def mostrar_centro_custo(self):
+        """Mostra o frame de centro de custo"""
+        self.frame_orcamento.pack_forget()
+        self.frame_detalhamento.pack_forget()
+        self.frame_base_dados.pack_forget()
+        self.frame_centro_custo.pack(fill="both", expand=True)
 
-# Atribuir às variáveis globais
-entry_estrutura = entries_centro_custo["ESTRUTURA & CENOGRAFIA R$"]
-entry_atracoes = entries_centro_custo["ATRAÇÕES R$"]
-entry_alimentos = entries_centro_custo["ALIMENTOS E BEBIDAS R$"]
-entry_equipamentos = entries_centro_custo["LOCAÇÃO DE EQUIPAMENTOS R$"]
-entry_servicos = entries_centro_custo["SERVIÇOS R$"]
-entry_equipe = entries_centro_custo["EQUIPE/PRODUÇÃO R$"]
-entry_taxas = entries_centro_custo["TAXAS/LEGALIZAÇÃO R$"]
-entry_divulgacao = entries_centro_custo["DIVULGAÇÃO R$"]
-entry_outros = entries_centro_custo["OUTROS R$"]
+    def mostrar_detalhamento_custos(self) -> None:
+        """Mostra o frame de detalhamento de custos"""
+        self.frame_centro_custo.pack_forget()
+        self.frame_detalhamento.pack(fill="both", expand=True)
 
-# Botões do centro de custo
-button_frame_centro = ttk.Frame(scrollable_frame_centro)
-button_frame_centro.grid(row=len(categorias), column=0, columnspan=2, pady=20)
+        # Limpar dados anteriores das linhas de categoria
+        self.linhas_categoria.clear()
 
-ttk.Button(button_frame_centro, text="Salvar e Continuar",
-          command=salvar_centro_custo).pack(side="left", padx=10)
-ttk.Button(button_frame_centro, text="Voltar",
-          command=voltar_orcamento).pack(side="left", padx=10)
+        # Limpar abas anteriores
+        for aba in self.notebook.tabs():
+            self.notebook.forget(aba)
 
-# ========== FRAME DE DETALHAMENTO DE CUSTOS ==========
-frame_detalhamento = ttk.Frame(janela)
+        # Criar abas apenas para categorias preenchidas
+        self.categorias_preenchidas = [
+            categoria for categoria, valor in self.dados_centro_custo.items() 
+            if valor and str(valor).strip()
+        ]
 
-# Notebook para as abas de categorias
-notebook = ttk.Notebook(frame_detalhamento)
-notebook.pack(fill="both", expand=True, padx=10, pady=10)
+        print(f"Categorias preenchidas: {self.categorias_preenchidas}")
 
-# Botões do frame de detalhamento
-button_frame_detalhamento = ttk.Frame(frame_detalhamento)
-button_frame_detalhamento.pack(fill="x", pady=10)
+        # Mapear nomes das categorias para exibição
+        nomes_categorias = {
+            "ESTRUTURA & CENOGRAFIA": "ESTRUTURA & CENOGRAFIA",
+            "ATRAÇÕES": "ATRAÇÕES",
+            "ALIMENTOS E BEBIDAS": "ALIMENTOS E BEBIDAS",
+            "LOCAÇÃO DE EQUIPAMENTOS": "LOCAÇÃO DE EQUIPAMENTOS",
+            "SERVIÇOS": "SERVIÇOS",
+            "EQUIPE/PRODUÇÃO": "EQUIPE/PRODUÇÃO",
+            "TAXAS/LEGALIZAÇÃO": "TAXAS/LEGALIZAÇÃO",
+            "DIVULGAÇÃO": "DIVULGAÇÃO",
+            "OUTROS": "OUTROS"
+        }
 
-ttk.Button(button_frame_detalhamento, text="Novo Orçamento",
-          command=finalizar_orcamento).pack(side="left", padx=10)
-ttk.Button(button_frame_detalhamento, text="Gerar Relatório",
-          command=salvar_relatorio).pack(side="left", padx=10)
-ttk.Button(button_frame_detalhamento, text="Voltar",
-          command=voltar_centro_custo).pack(side="left", padx=10)
+        # Criar uma aba para cada categoria preenchida
+        for categoria in self.categorias_preenchidas:
+            if categoria in nomes_categorias:
+                self._criar_aba_categoria(nomes_categorias[categoria])
+    def executar(self) -> None:
+        """Executa a aplicação"""
+        self.janela.mainloop()
 
-# Iniciar com o frame do orçamento visível
-frame_centro_custo.pack_forget()
-frame_detalhamento.pack_forget()
 
-janela.mainloop()
+if __name__ == "__main__":
+    app = BudgetApp()
+    app.executar()
