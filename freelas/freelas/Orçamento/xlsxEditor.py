@@ -52,7 +52,7 @@ def unmerge_line_horizontal(ws, line):
 
 def cop_sheet(arquivo):
     arq = arquivo.split('.')[0]
-    nome_copia = f'{arq}_formatado.xlsx'
+    nome_copia = f'PROPOSTA.xlsx'
     try:
         shutil.copy2(arquivo, nome_copia)
         return nome_copia
