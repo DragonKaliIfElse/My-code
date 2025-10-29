@@ -1,0 +1,206 @@
+<link-docs>env ❯
+https://api.sienge.com.br/docs/general-information.html
+Valores coletados: []
+https://api.sienge.com.br/docs/general-rest.html
+Valores coletados: []
+https://api.sienge.com.br/docs/html-files/building-projects-progress-logs-v1.html
+Valores coletados: ['Atualiza percentual de avanço físico das Tarefas do Planejamento de uma Obra.', 'Consulta progressos do Planejamento de Obras.', 'Consulta o progresso do Planejamento de uma Obra.', 'Consulta informações dos itens de uma medição específica.']
+https://api.sienge.com.br/docs/html-files/prepayment-slip-register-v1.html
+Valores coletados: ['Registra cobrança referente a antecipação de parcelas.', 'Consulta informações para antecipação de parcelas.']
+https://api.sienge.com.br/docs/html-files/creditor-report-v1.html
+Valores coletados: ['Gera e retorna a URL do relatório de extrato de credores em PDF. O link expira em 5 minutos.']
+https://api.sienge.com.br/docs/html-files/trial-balance-v1.html
+Valores coletados: ['Busca dados do balancete de verificação']
+https://api.sienge.com.br/docs/html-files/fixed-assets-v1.html
+Valores coletados: []
+https://api.sienge.com.br/docs/html-files/movable-assets-v1.html
+Valores coletados: []
+https://api.sienge.com.br/docs/html-files/building-calendar-v1.html
+Valores coletados: ['Retorna um objeto JSON com as configurações do calendário usado no planejamento da obra. O planejamento em questão é identificado pelo respectivo código da obra (buildingId), considerando por padrão a versão atual do planejamento.', 'Insere um calendário em uma nova versão da planilha de planejamento de uma obra. O planejamento em questão é identificado pelo respectivo código da obra (buildingId), considerando por padrão a versão atual do planejamento.', 'Retorna um array com as datas dos dias de folga no período da obra e suas descrições. O planejamento em questão é identificado pelo respectivo código da obra (buildingId), considerando por padrão a versão atual do planejamento.', 'Insere folgas no calendário da obra em uma nova versão da planilha de planejamento. O planejamento em questão é identificado pelo respectivo código da obra (buildingId), considerando por padrão a versão atual do planejamento.', 'Remove folgas do calendário da obra em uma nova versão da planilha de planejamento. O planejamento em questão é identificado pelo respectivo código da obra (buildingId), considerando por padrão a versão atual do planejamento.']
+https://api.sienge.com.br/docs/html-files/cost-center-v1.html
+Valores coletados: ['Busca todos os centros de custo no Sienge', 'Busca centro de custo no Sienge com as contas correntes disponíveis', 'Busca todos os centros de custos no Sienge ordenados pelo codigo id', 'Busca as configurações de registro ATO cadastradas no centro de custo.']
+https://api.sienge.com.br/docs/html-files/customers-v1.html
+Valores coletados: ['Busca uma lista de clientes ordenando do cadastro mais recente para o mais antigo.', 'Persiste um cliente.', 'Busca um cliente.', 'Atualiza informações de um cliente.', 'Atualiza os telefones de um cliente.', 'Atualiza o cônjuge de um cliente, apagando o antigo cônjuge. Se não existir, cria.', 'Atualiza as rendas familiares de um cliente.', 'Atualiza os endereços de um cliente. Se não existir, cria.', 'Inclui um anexo ao cliente.', 'Busca as informações dos anexos do cliente', 'Download de anexo do cliente', 'Inclui um procurador ao cliente.']
+https://api.sienge.com.br/docs/html-files/commissions-v1.html
+Valores coletados: ['Persiste uma comissão.', 'Busca uma comissão por ID.', 'Altera uma comissão por ID.', 'Deleta uma comissão por ID.', 'Busca as parcelas das comissões por filtro.', 'Realiza autorização, ou desfaz autorização das parcelas.', 'Realiza cancelamento, ativação das parcelas.', 'Realiza liberação das parcelas.', 'Retorna um totalizador agrupado por situação das parcelas.', 'Deleta corretor de uma comissão por ID.', 'Adiciona um ou mais corretores na comissão por ID.', 'Persiste uma configuração de corretor.', 'Consulta uma lista de configurações de corretores.', 'Atualiza um registro de configuração do corretor.', 'Deleta um registro de configuração do corretor por ID.', 'Persiste uma configuração de empreendimento.', 'Consulta as configurações de um empreendimento.', 'Atualiza um registro de configuração do empreendimento.']
+https://api.sienge.com.br/docs/html-files/commissions-forecasts-v1.html
+Valores coletados: ['Busca uma lista de comissões de venda.', 'Insere uma previsão de comissão de venda.']
+https://api.sienge.com.br/docs/html-files/accountancy-accounts-v1.html
+Valores coletados: []
+https://api.sienge.com.br/docs/html-files/checking-accounts-v1.html
+Valores coletados: ['Busca uma lista de contas-correntes ordenando pelo número da conta']
+https://api.sienge.com.br/docs/html-files/sales-contracts-v1.html
+Valores coletados: ['Busca uma lista de contratos de vendas ordenados pelo código do contrato de forma decrescente.', 'Persiste um contrato de vendas.', 'Exclui um contrato de vendas.', 'Busca um contrato de vendas.', 'Atualiza dados de contratos.', 'Cancela um contrato de venda.', 'Inclui um anexo ao contrato.', 'Busca as informações dos anexos do contrato', 'Download de anexo do contrato', 'Busca uma lista dos avalistas do contrato de vendas ordenados pelo código do avalista de forma decrescente.', 'Inclui avalistas ao contrato.', 'Busca um avalista no contrato de venda.', 'Atualiza informações de avalistas do contrato.', 'Sobrescreve a lista de telefones do avalista.']
+https://api.sienge.com.br/docs/html-files/contracts-v1.html
+Valores coletados: ['Consulta lista de contratos', 'Consultar contrato', 'Lista de anexos do contrato', 'Retorna o anexo do contrato', 'Inclui anexo do contrato', 'Consultar obras do contrato com unidades construtivas', 'Retorna um array com os itens do contrato identificados pelo contrato (documentId, contractNumber) e pertencentes a uma planilha (buildingId, buildingUnitId).', 'Autoriza um Contrato que está aguardando autorização', 'Reprova um Contrato que está aguardando autorização.']
+https://api.sienge.com.br/docs/html-files/purchase-quotations-v1.html
+Valores coletados: ['Cria uma cotação de preço', 'Busca todas as cotações com negociações', 'Cria um item de cotação de preço', 'Cria um item de cotação de preço a partir da entrega do item de solicitação de compra', 'Inclui um fornecedor no item da cotação de preço', 'Inclui uma nova negociação de cotação de preço para um fornecedor', 'Autoriza a última negociação de cotação de preços para o fornecedor', 'Atualiza uma negociação de cotação de preço de um fornecedor', 'Atualiza item de negociação de cotação de preço com fornecedor', 'Gera relatório e retorna url para download do PDF referente ao mapa de cotações.']
+https://api.sienge.com.br/docs/html-files/creditor-v1.html
+Valores coletados: ['Inserção de credor no Sienge', 'Busca o credor no Sienge', 'Busca o credor no Sienge', 'Atualiza informações referentes ao credor no Sienge', 'Inserção das informações bancárias do credor no Sienge', 'Busca as informações bancárias do credor no Sienge', 'Atualizar as informações bancárias do credor no Sienge', 'Insere as informações de pix do credor no Sienge', 'Busca as informações de pix do credor no Sienge', 'Altera as informações de pix do credor no Sienge', 'Atualizar as informações de um telefone do credor no Sienge', 'Atualizar as informações de um contato do credor no Sienge', 'Atualizar as informações de um procurador do credor no Sienge', 'Atualizar a lista de representantes do credor no Sienge', 'Atualizar as informações da desoneração da folha de pagamento por ano do credor no Sienge', 'Ativar um credor desativado no Sienge', 'Desativar um credor ativado no Sienge']
+https://api.sienge.com.br/docs/html-files/departments-v1.html
+Valores coletados: ['Busca o departamento no Sienge', 'Busca uma lista de departamentos']
+https://api.sienge.com.br/docs/html-files/construction-daily-report-v1.html
+Valores coletados: ['Retorna os Diários das Obras paginados.', 'Cadastra um Diário de Obra, com informações de tarefas, ocorrências, equipes e equipamentos.', 'Retorna todos os dados de um Diário de Obra específico', 'Deleta um Diário de Obra, exceto aqueles que tenham sido usados em uma Integração.', 'Inclui anexo em um Diário de Obra', 'Retorna o anexo de um Diário de Obra', 'Inclui ocorrências em um Diário de Obra', 'Atualiza Ocorrências em um Diário de Obra', 'Inclui tarefas em um Diário de Obra', 'Atualiza tarefas em um Diário de Obra', 'Inclui equipes em um Diário de Obra', 'Atualiza Equipes em um Diário de Obra', 'Inclui equipamentos em um Diário de Obra', 'Atualiza Equipamentos em um Diário de Obra', 'Retorna a lista de Tipos de Ocorrência.', 'Retorna a lista de Tipos de Ocorrência, Equipe e Equipamento do Diário de Obra.']
+https://api.sienge.com.br/docs/html-files/document-identification-v1.html
+Valores coletados: ['Busca o documento no Sienge']
+https://api.sienge.com.br/docs/html-files/enterprise-v1.html
+Valores coletados: ['Busca o empreendimento no Sienge', 'Busca uma lista de empreendimentos', 'Busca valores dos agrupamentos no Sienge']
+https://api.sienge.com.br/docs/html-files/company-v1.html
+Valores coletados: ['Busca a empresa no Sienge', 'Busca uma lista de empresas ordenadas pelo código id']
+https://api.sienge.com.br/docs/html-files/civil-status-v1.html
+Valores coletados: ['Persiste um estado civil.', 'Busca uma lista de estados civis']
+https://api.sienge.com.br/docs/html-files/stock-inventories-v1.html
+Valores coletados: ['Retorna um array contendo as informações atuais de todos os insumos que estão no estoque do centro de custo informado. Insumos que estão com quantidade em estoque zerada não serão retornados. Cada item do array representa o estoque para uma combinação específica de insumo, detalhe e marca, conforme a organização desses dados no Sienge.', 'Consulta as apropriações de obra do insumo em estoque no centro de custo informado', 'Retorna um array contendo todas as reservas consistentes de forma paginada.', 'Retorna um array contendo todos os itens da reserva de estoque informada de forma paginada.', 'Cria um movimento que atende a reserva.', 'Cria um movimento de estoque de entrada ou de saída, para um ou mais insumos.', 'Realiza uma transferência de estoque entre centros de custo.', 'Retorna uma movimentação de estoque.', 'Retorna uma coleção de movimentações de estoque de forma paginada.']
+https://api.sienge.com.br/docs/html-files/customer-financial-statements-v1.html
+Valores coletados: ['Envia relatório de extrato de cliente por e-mail', 'Exibe as informações do extrato do cliente', 'Gera o link para o download do PDF referente ao Extrato do Cliente. O link expira em 5 minutos.']
+https://api.sienge.com.br/docs/html-files/accounts-statements-v1.html
+Valores coletados: ['Retorna a lista de movimentações financeiras associados a contas do Sienge, com data dentro do periodo informado nos parâmetros.']
+https://api.sienge.com.br/docs/html-files/accountancy-closingaccountancy-v1.html
+Valores coletados: []
+https://api.sienge.com.br/docs/html-files/payment-slip-notification-v1.html
+Valores coletados: ['Envia o boleto de segunda via do título e parcela informado, no e-mail do respectivo cliente do título.', 'Gera o link para boleto de segunda via do título e parcela informado, assim como o número digitável do boleto. O link expira em 5 minutos.']
+https://api.sienge.com.br/docs/html-files/overdue-receivable-v1.html
+Valores coletados: ['Registra cobrança referente a parcelas vencidas.']
+https://api.sienge.com.br/docs/html-files/current-debit-balance-v1.html
+Valores coletados: ['Gera as informações referentes ao saldo devedor presente do cliente informado.', 'Gera o link para o download do PDF referente ao Saldo Devedor Presente do cliente. O link expira em 5 minutos.']
+https://api.sienge.com.br/docs/html-files/resource-groups-v1.html
+Valores coletados: ['Retorna um array com todos os grupos de insumos.']
+https://api.sienge.com.br/docs/html-files/collections-notification-history-v1.html
+Valores coletados: ['Busca o histórico da notificação de cobrança no Sienge']
+https://api.sienge.com.br/docs/html-files/indexers-v1.html
+Valores coletados: ['Busca uma lista de indexadores']
+https://api.sienge.com.br/docs/html-files/tax-information-v1.html
+Valores coletados: ['Persiste informações fiscais do tipo Serviço no título informado.', 'Persiste um item do tipo Serviço nas informações fiscais do título informado.']
+https://api.sienge.com.br/docs/html-files/customer-income-tax-v1.html
+Valores coletados: ['Envia relatório de imposto de renda por e-mail', 'Gera o link para o download do PDF referente ao Imposto de Renda do cliente. O link expira em 5 minutos.']
+https://api.sienge.com.br/docs/html-files/building-cost-estimation-resources-v1.html
+Valores coletados: ['Retorna um array com todos os insumos ativos do orçamento de uma obra', 'Inclui um insumo no orçamento de uma obra.', 'Retorna um insumo do orçamento de uma obra', 'Atualiza o código auxiliar de um insumo no orçamento de uma obra']
+https://api.sienge.com.br/docs/html-files/building-cost-estimation-cost-estimate-resources-v1.html
+Valores coletados: ['Retorno um array com todos os insumos orçados']
+https://api.sienge.com.br/docs/html-files/accountancy-entries-v1.html
+Valores coletados: ['Salva lançamentos contábeis', 'Busca lançamentos contábeis', 'Salva lançamentos contábeis assíncronos', 'Retorna o status do processamento dos lançamentos']
+https://api.sienge.com.br/docs/html-files/accountancy-entrygenerator-entrybatches-v1.html
+Valores coletados: []
+https://api.sienge.com.br/docs/html-files/property-rental-v1.html
+Valores coletados: ['Lista de locação de imóveis.', 'Cria contrato de locação de imóveis.']
+https://api.sienge.com.br/docs/html-files/sites-v1.html
+Valores coletados: ['Busca uma lista de locais de uma obra']
+https://api.sienge.com.br/docs/html-files/accountancy-batch-v1.html
+Valores coletados: ['Salva lotes contábeis', 'Busca lotes contábeis']
+https://api.sienge.com.br/docs/html-files/real-estate-map-v1.html
+Valores coletados: ['Retorna os dados do Mapa Imobiliário para os empreendimentos e período informados nos parâmetros.']
+https://api.sienge.com.br/docs/html-files/measurement-v1.html
+Valores coletados: ['Consulta medições de contratos', 'Consulta medições', 'Cria uma nova medição para o respectivo contrato e obra.', 'Retorna um array com os itens medidos nesta medição.', 'Retorna a liberação de uma medição.', 'Consulta anexos de medição de contrato', 'Download anexos de medição de contrato', 'Inclui anexos de medição de contrato', 'Autoriza uma Medição que está aguardando autorização', 'Reprova uma Medição que está aguardando autorização.']
+https://api.sienge.com.br/docs/html-files/cities-v1.html
+Valores coletados: ['Busca uma lista de municípios']
+https://api.sienge.com.br/docs/html-files/purchase-invoices-v1.html
+Valores coletados: ['Consulta nota fiscal de compra', 'Retorna os itens da nota fiscal de compra', 'Cadastra uma nota fiscal de compra.', 'Insere itens em uma nota fiscal já existente', 'Lista das entregas atendidas']
+https://api.sienge.com.br/docs/html-files/nfe-api-v1.html
+Valores coletados: ['Retorna as notas fiscais em determinado período ordenadas por data de emissão', 'Retorna uma nota fiscal', 'Retorna o emitente e destinatario de uma nota', 'Retorna as formas de pagamento de uma nota', 'Retorna as informações do local de entrega e retirada', 'Retorna as notas referenciadas', 'Retorna as informações de icms total de uma nota', 'Retorna as informações de transporte, presentes na nota', 'Retorna as informações issqn total, presentes na nota', 'Retorna os itens/produtos, presentes na nota', 'Retorna o ipi de determinado produto/serviço, presente na nota', 'Retorna o pis-cofins de determinado produto/serviço, presente na nota', 'Retorna o icms simples nacional de determinado produto/serviço, presente na nota', 'Retorna o issqn de determinado produto/serviço, presente na nota', 'Retorna o icms de determinado produto/serviço, presente na nota']
+https://api.sienge.com.br/docs/html-files/building-cost-estimations-v1.html
+Valores coletados: ['Retorna um array com as planilhas da versão atual do orçamento de uma obra, sendo uma planilha para cada unidade construtiva (building unit). O orçamento em questão é identificado pelo respectivo código da obra (buildingId), considerando por padrão a versão atual do orçamento.', 'Retorna um array com os itens de uma planilha da versão atual do orçamento de uma obra. A planilha em questão é identificada pela respectivo código da unidade construtiva (buildingUnitId).']
+https://api.sienge.com.br/docs/html-files/parameters-v1.html
+Valores coletados: ['Retorna o id e o valor de um determinado parâmetro. O formato do valor depende do seu tipo, podendo ser um texto, uma observação, um valor inteiro, um valor decimal ou o valor de uma chave estrangeira.']
+https://api.sienge.com.br/docs/html-files/purchase-orders-v1.html
+Valores coletados: ['Consulta pedidos de compra', 'Consulta pedido de compra', 'Consulta de itens do pedido de compra', 'Consulta item do pedido de compra', 'Consulta de previsões de entregas do item do pedido de compra', 'Consulta de apropriações de obra do item do pedido', 'Consultar a totalização do pedido de compra', 'Consultar o faturamento direto simples do pedido de compra. Não consulta faturamento direto com desconto em medição.', 'Autoriza pedido de compra que está aguardando autorização', 'Autoriza pedido de compra que está aguardando autorização com a opção de informar a observação', 'Reprova pedido de compra que está aguardando autorização', 'Reprova pedido de compra que está aguardando autorização com a opção de informar a observação', 'Inserção de anexos no pedido de compra', 'Lista de anexos do pedido de compra', 'Download Anexo', 'Lista de critérios de avaliação', 'Cadastra uma avaliação do fornecedor no pedido de compra', 'Cadastra uma avaliação do fornecedor no pedido de compra caso não exista, ou atualiza a última avaliação cadastrada', 'Gera o relatório de Análise do Pedido de Compra informado e efetua download deste em formato PDF.']
+https://api.sienge.com.br/docs/html-files/building-projects-v1.html
+Valores coletados: ['Retorna um array com as tarefas da versão atual da planilha de planejamento de uma obra, sendo uma planilha para cada unidade construtiva (building unit). O planejamento em questão é identificado pelo respectivo código da obra (buildingId), considerando por padrão a versão atual do planejamento.', 'Insere um array de tarefas em uma nova versão da planilha de planejamento de uma obra, sendo uma planilha para cada unidade construtiva (building unit). O planejamento em questão é identificado pelo respectivo código da obra (buildingId), considerando por padrão a versão atual do planejamento.']
+https://api.sienge.com.br/docs/html-files/payment-categories-v1.html
+Valores coletados: ['Busca o plano financeiro no Sienge', 'Busca todos os planos financeiros no Sienge']
+https://api.sienge.com.br/docs/html-files/bearers-receivable-v1.html
+Valores coletados: ['Busca uma lista de Portadores']
+https://api.sienge.com.br/docs/html-files/professions-v1.html
+Valores coletados: ['Busca uma lista de profissões', 'Persiste uma lista de profissões.', 'Busca uma profissão.']
+https://api.sienge.com.br/docs/html-files/remade-installments-v1.html
+Valores coletados: ['Busca os reparcelamentos das parcelas no Sienge', 'Realiza um reparcelamento.']
+https://api.sienge.com.br/docs/html-files/unit-bookings-v1.html
+Valores coletados: ['Reserva uma unidade.', 'Inativa a reserva da unidade.']
+https://api.sienge.com.br/docs/html-files/accounts-balances-v1.html
+Valores coletados: ['Retorna a lista de saldos das contas do Sienge, na data informada nos parâmetros.']
+https://api.sienge.com.br/docs/html-files/email-current-debit-balance-v1.html
+Valores coletados: ['Envia relatório de Saldo Devedor Presente por e-mail.']
+https://api.sienge.com.br/docs/html-files/total-current-debit-balance-v1.html
+Valores coletados: ['Gera as informações referentes ao total do saldo devedor presente do cliente informado.']
+https://api.sienge.com.br/docs/html-files/purchase-requests-v1.html
+Valores coletados: ['Consulta solicitação de compra', 'Autoriza todos os itens de uma solicitação que estão aguardando autorização', 'Reprova todos os itens de uma solicitação que estão aguardando autorização', 'Cria uma solicitação de compra para uma obra já existente', 'Consulta itens de solicitação de compra', 'Consulta apropriações de um item da solicitação de compra existente', 'Consulta entregas de um item da solicitação de compra existente', 'Cria itens para uma solicitação de compra existente', 'Autoriza um item de uma solicitação que está aguardando autorização', 'Reprova um item de uma solicitação que está aguardando autorização', 'Consulta de anexos da solicitação de compra', 'Download do anexo da solicitação de compra']
+https://api.sienge.com.br/docs/html-files/price-tables-v1.html
+Valores coletados: ['Busca a última versão das tabelas de preços.']
+https://api.sienge.com.br/docs/html-files/cost-databases-v1.html
+Valores coletados: ['Retorna um array com todas as tabelas ativas do custos unitários', 'Retorna um array com todos os insumos ativos de uma tabela do custos unitários (cost-database)', 'Retorna o insumo correspondente ao id informado da tabela do custos unitários (cost-database)', 'Retorna um array com todos os serviços ativos de uma tabela do custos unitários (cost-database)', 'Retorna um array com todas as composições dos serviços ativos para a respectiva tabela. Se não existir nenhuma, retorna um array vazio.']
+https://api.sienge.com.br/docs/html-files/property-types-v1.html
+Valores coletados: ['Busca uma lista de tipos de imóveis', 'Busca um tipo de imóvel.']
+https://api.sienge.com.br/docs/html-files/customer-types-v1.html
+Valores coletados: ['Busca uma lista de tipos de clientes']
+https://api.sienge.com.br/docs/html-files/payment-condition-types-v1.html
+Valores coletados: ['Busca os Tipos de Condição de Pagamento.']
+https://api.sienge.com.br/docs/html-files/bill-debt-v1.html
+Valores coletados: ['Busca os títulos no Sienge', 'Inserção do título no Sienge', 'Busca os títulos no Sienge de acordo com a data de alteração', 'Busca o título no Sienge', 'Atualiza o título no Sienge', 'Inserção do título no Sienge com base em nota fiscal eletrônica recebida', 'Busca as parcelas do título', 'Atualiza parcela do título', 'Busca os impostos do título', 'Busca as apropriações financeiras do título', 'Busca as apropriações departamento do título', 'Busca as apropriações obra do título', 'Atualiza as apropriações obra do título', 'Inserção de informação de pagamento da parcela do tipo transferência bancária', 'Busca informação de pagamento da parcela do tipo transferência bancária', 'Inserção de informação de pagamento da parcela do tipo boleto bancário', 'Busca informação de pagamento da parcela do tipo boleto bancário', 'Inserção de informação de pagamento da parcela do tipo boleto concessionária', 'Busca informação de pagamento da parcela do tipo boleto concessionária', 'Inserção de informação de pagamento da parcela do tipo tributos com código de barras', 'Busca informação de pagamento da parcela do tipo tributos com código de barras', 'Inserção de informação de pagamento da parcela do tipo débito direto autorizado', 'Busca informação de pagamento da parcela do tipo débito direto autorizado', 'Inserção de informação de pagamento da parcela do tipo tributos DARF', 'Busca informação de pagamento da parcela do tipo tributos DARF', 'Inserção de informação de pagamento da parcela do tipo tributos DARJ', 'Busca informação de pagamento da parcela do tipo tributos DARJ', 'Inserção de informação de pagamento da parcela do tipo tributos FGTS', 'Busca informação de pagamento da parcela do tipo tributos FGTS', 'Inserção de informação de pagamento da parcela do tipo tributos GARE', 'Busca informação de pagamento da parcela do tipo tributos GARE', 'Inserção de informação de pagamento da parcela do tipo tributos INSS', 'Busca informação de pagamento da parcela do tipo tributos INSS', 'Inserção de informação de pagamento da parcela do tipo Pix', 'Busca informação de pagamento da parcela do tipo Pix', 'Inserção de anexo no título', 'Busca as informações dos anexos do título', 'Download de anexo do título', 'Busca as unidades do título no Sienge', 'Altera as unidades do título no Sienge']
+https://api.sienge.com.br/docs/html-files/accounts-receivable-v1.html
+Valores coletados: ['Busca os títulos do cliente no Sienge', 'Busca os títulos no Sienge pelo número', 'Busca as parcelas do título', 'Altera data de vencimento da parcela e o status da cobrança para Em Aberto. Será possível registrar nova cobrança na sequência. Não será possível alterar parcelas com baixas e a nova data de vencimento não poderá ser menor que a data corrente.', 'Busca as apropriações financeiras do título']
+https://api.sienge.com.br/docs/html-files/unit-v1.html
+Valores coletados: ['Busca a unidade no Sienge', 'Atualiza informações da Unidade', 'Busca uma lista de unidades ordenadas decrescentemente pelo código id', 'Persiste uma Unidade.', 'Adiciona uma ou mais unidades filhas na unidade pelo ID.', 'Busca agrupamentos de unidade no Sienge', 'Inclui um anexo a unidade.', 'Cria uma característica da unidade.', 'Retorna todas características de unidade cadastradas', 'Vincula uma ou mais características já cadastradas a uma unidade', 'Cria uma situação para unidade.', 'Retorna todas situaçãos de unidade cadastradas']
+https://api.sienge.com.br/docs/html-files/resource-units-of-movement-v1.html
+Valores coletados: ['Retorna um array com as unidades de movimento dos insumos da obra. Retorna somente as unidades ativas dos insumos ativos.']
+https://api.sienge.com.br/docs/general-bulk.html
+Valores coletados: []
+https://api.sienge.com.br/docs/html-files/bulk-data-sales-v1.html
+Valores coletados: ['Realiza leitura dos contratos de vendas.']
+https://api.sienge.com.br/docs/html-files/bulk-data-purchase-quotations-v1.html
+Valores coletados: ['Retorna um array com todas as cotações de preços contendo itens, fornecedores e negociações.']
+https://api.sienge.com.br/docs/html-files/bulk-data-customer-extract-history-v1.html
+Valores coletados: ['Realiza leitura de dados do extrato de cliente.']
+https://api.sienge.com.br/docs/html-files/bulk-data-customer-debt-balance.html
+Valores coletados: ['Realiza leitura de dados do saldo devedor cliente.']
+https://api.sienge.com.br/docs/html-files/bulk-data-building-resource-v1.html
+Valores coletados: ['Retorna um array dos Insumos associados à uma Obra por detalhe e marca. Observação: Não serão retornados os Insumos do tipo Item de Transporte e Item de Incidência.']
+https://api.sienge.com.br/docs/html-files/bulk-data-building-cost-estimations-v1.html
+Valores coletados: ['Retorna um array com todos os itens de todas as planilhas de todas as versões de orçamento de todas as obras.']
+https://api.sienge.com.br/docs/html-files/bulk-data-bank-movement-v1.html
+Valores coletados: ['Retorna movimentos financeiros, caso possua.', 'Retorna movimentos financeiros, caso possua.']
+https://api.sienge.com.br/docs/html-files/bulk-data-business-budget-v1.html
+Valores coletados: ['Retorna um array com todos as versões de orçamentos empresarias.']
+https://api.sienge.com.br/docs/html-files/bulk-data-outcome-v1.html
+Valores coletados: ['Retorna parcelas sem baixa e seus pagamentos, caso possua.', 'Retorna parcelas.']
+https://api.sienge.com.br/docs/html-files/bulk-data-income-v1.html
+Valores coletados: ['Retorna as parcelas sem baixa e seus pagamentos (caso possuam), para títulos em um período e tipo de período informados.', 'Retorna as parcelas dos títulos informados, independente de período e tipo de período.']
+https://api.sienge.com.br/docs/html-files/bulk-data-invoice-items-v1.html
+Valores coletados: ['Realiza leitura de itens das notas fiscais.']
+https://api.sienge.com.br/docs/html-files/bulk-data-account-cost-center-balance-v1.html
+Valores coletados: ['Retorna saldos contábeis, caso possua.']
+https://api.sienge.com.br/docs/html-files/bulk-data-account-company-balance-v1.html
+Valores coletados: ['Retorna movimentos financeiros, caso possua.']
+https://api.sienge.com.br/docs/html-files/bulk-data-defaulters-receivable-bills-v1.html
+Valores coletados: ['Retorna os títulos inadimplentes juntamente com as parcelas em atraso.', 'Retorna os títulos inadimplentes somente com a parcela com maior atraso (aging), agrupados por cliente e unidade. Ex.: caso tenham dois títulos de um mesmo cliente, na mesma unidade, será retornado apenas o título que possui a parcela mais antiga.']
+https://api.sienge.com.br/docs/general-hooks.html
+Valores coletados: []
+https://api.sienge.com.br/docs/general-hooks-types.html
+Valores coletados: []
+https://api.sienge.com.br/docs/html-files/hooks-v1.html
+Valores coletados: ['Consulta paginada de WebHooks', 'Insere um novo WebHook', 'Consulta um WebHook específico por ID', 'Remove um WebHook específico por ID']</link-docs>
+<parametros>
+valor_orçado_da_obra_S/BDI
+valor_previsto
+valor_medio 
+valor_gasto 
+previsao_caixa 
+realizado
+situacao
+Custo incorrido
+contas a pagar
+estoque 
+valor orçado C/BDI
+TOTAL DESPESAS
+TOTAL RECEITAS
+RECEITAS ACUMULADAS 
+DISPESAS ACUMULADAS
+salarios - obra 
+tijolos e blocos cerâmicos/concreto
+esquadrias, acessórios e componentes de alumínio
+aços/armaduras 
+cimentos 
+adiantamento salarial - obra 
+argamassas industrializadas
+TOTAL RECEITAS 
+TOTAL DISPESAS C/ ESCRITORIO 
+RESULTADO</parametros>
+me diga qual desses link-docs é é melhor para achar esses parametros 

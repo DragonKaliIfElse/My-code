@@ -17,7 +17,7 @@ class MainWindow(QMainWindow):
         self.ui.toggle_button.clicked.connect(self.toggle_button)
 
         self.show()
-    
+ 
     def toggle_button(self):
         menu_width = self.ui.left_menu.width()
 

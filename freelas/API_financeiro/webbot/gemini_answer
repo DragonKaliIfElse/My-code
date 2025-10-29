@@ -1,0 +1,77 @@
+1. Orçamento, Custos Previstos e Insumos
+
+Para parâmetros como: valor_orçado_da_obra_S/BDI, valor orçado C/BDI, valor_previsto, e os itens de custo como tijolos e blocos..., esquadrias..., aços/armaduras, cimentos, argamassas....
+
+    Link Principal: https://api.sienge.com.br/docs/html-files/building-cost-estimations-v1.html
+
+        Descrição: "Retorna um array com as planilhas da versão atual do orçamento de uma obra..."
+
+    Link para Insumos: https://api.sienge.com.br/docs/html-files/building-cost-estimation-resources-v1.html
+
+        Descrição: "Retorna um array com todos os insumos ativos do orçamento de uma obra"
+
+    Link (Bulk Data): https://api.sienge.com.br/docs/html-files/bulk-data-building-cost-estimations-v1.html
+
+        Descrição: "Retorna um array com todos os itens de todas as planilhas de todas as versões de orçamento de todas as obras." (Este é excelente para extração em massa).
+
+2. Despesas, Custos Incorridos e Contas a Pagar
+
+Para parâmetros como: contas a pagar, valor_gasto, Custo incorrido, TOTAL DESPESAS, DISPESAS ACUMULADAS, TOTAL DISPESAS C/ ESCRITORIO, salarios - obra, adiantamento salarial - obra.
+
+    Link Principal (Contas a Pagar): https://api.sienge.com.br/docs/html-files/bill-debt-v1.html
+
+        Descrição: "Busca os títulos no Sienge", "Inserção do título no Sienge"
+
+    Link (Bulk Data): https://api.sienge.com.br/docs/html-files/bulk-data-outcome-v1.html
+
+        Descrição: "Retorna parcelas sem baixa e seus pagamentos, caso possua."
+
+    Link (Notas Fiscais): https://api.sienge.com.br/docs/html-files/purchase-invoices-v1.html
+
+        Descrição: "Cadastra uma nota fiscal de compra." (Fonte primária do valor_gasto).
+
+    Link (Plano Financeiro): https://api.sienge.com.br/docs/html-files/payment-categories-v1.html
+
+        Descrição: "Busca o plano financeiro no Sienge" (Útil para categorizar despesas como salarios - obra).
+
+3. Receitas e Contas a Receber
+
+Para parâmetros como: TOTAL RECEITAS e RECEITAS ACUMULADAS.
+
+    Link Principal (Contas a Receber): https://api.sienge.com.br/docs/html-files/accounts-receivable-v1.html
+
+        Descrição: "Busca os títulos do cliente no Sienge"
+
+    Link (Bulk Data): https://api.sienge.com.br/docs/html-files/bulk-data-income-v1.html
+
+        Descrição: "Retorna as parcelas sem baixa e seus pagamentos (caso possuam), para títulos em um período..."
+
+    Link (Vendas): https://api.sienge.com.br/docs/html-files/bulk-data-sales-v1.html
+
+        Descrição: "Realiza leitura dos contratos de vendas."
+
+4. Saldos, Resultados e Contabilidade
+
+Para parâmetros como: realizado, RESULTADO, previsao_caixa, e os totais acumulados.
+
+    Link Principal (Balancete): https://api.sienge.com.br/docs/html-files/trial-balance-v1.html
+
+        Descrição: "Busca dados do balancete de verificação" (Este é provavelmente o mais importante para totais como RESULTADO, TOTAL DESPESAS e TOTAL RECEITAS consolidados).
+
+    Link (Saldos Contábeis): https://api.sienge.com.br/docs/html-files/bulk-data-account-cost-center-balance-v1.html
+
+        Descrição: "Retorna saldos contábeis, caso possua."
+
+    Link (Movimentações): https://api.sienge.com.br/docs/html-files/accounts-statements-v1.html
+
+        Descrição: "Retorna a lista de movimentações financeiras associados a contas do Sienge..."
+
+5. Estoque
+
+Para o parâmetro: estoque.
+
+    Link Principal: https://api.sienge.com.br/docs/html-files/stock-inventories-v1.html
+
+        Descrição: "Retorna um array contendo as informações atuais de todos os insumos que estão no estoque do centro de custo informado." (Este é o link exato para esse parâmetro).
+
+Gostaria de detalhar os endpoints específicos para um desses grupos, como "Orçamento" ou "Contas a Pagar"?

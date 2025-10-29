@@ -1,0 +1,57 @@
+🎯 Melhores Link-Docs para os Parâmetros:
+
+    building-cost-estimations-v1.html
+
+        Endpoints:
+
+            Retorna um array com as planilhas da versão atual do orçamento de uma obra
+
+            Retorna um array com os itens de uma planilha da versão atual do orçamento
+
+        Motivo: Ideal para valor_orçado_da_obra_S/BDI, valor_previsto, valor_gasto, valor orçado C/BDI, TOTAL DESPESAS, TOTAL RECEITAS.
+
+    building-cost-estimation-resources-v1.html
+
+        Endpoints:
+
+            Retorna um array com todos os insumos ativos do orçamento de uma obra
+
+            Inclui um insumo no orçamento de uma obra
+
+        Motivo: Relacionado a custos de materiais como tijolos, esquadrias, aços/armaduras, cimentos, argamassas.
+
+    accounts-statements-v1.html
+
+        Endpoint:
+
+            Retorna a lista de movimentações financeiras associados a contas do Sienge
+
+        Motivo: útil para previsao_caixa, realizado, RECEITAS ACUMULADAS, DESPESAS ACUMULADAS.
+
+    trial-balance-v1.html
+
+        Endpoint:
+
+            Busca dados do balancete de verificação
+
+        Motivo: Contempla RESULTADO, TOTAL RECEITAS, TOTAL DESPESAS.
+
+    stock-inventories-v1.html
+
+        Endpoints:
+
+            Retorna um array contendo as informações atuais de todos os insumos no estoque
+
+            Consulta as apropriações de obra do insumo em estoque
+
+        Motivo: Atende a estoque, Custo incorrido.
+
+    bill-debt-v1.html
+
+        Endpoints:
+
+            Busca os títulos no Sienge (contas a pagar/receber)
+
+            Busca as parcelas do título
+
+        Motivo: Relacionado a contas a pagar, situacao.
