@@ -1,9 +1,9 @@
 #!/bin/bash
 
-subdomain="engeplan"
-senha="l2dCJQaD5y21QB009C8J7nEawnpt1jmR"
-token1="ZW5nZXBsYW4tYmk6bDJkQ0pRYUQ1eTIxUUIwMDlDOEo3bkVhd25wdDFqbVI=" #base64(subdomain:senha)
-token2="ZW5nZXBsYW4tY2xhdWRpbzpsMFVoZG9sNGl6YUdvS0g5UXFBNjdPdFlUSWYxZDI4OAo="
+subdomain=""
+senha=""
+token1="=" #base64(subdomain:senha)
+token2="="
 customerId=161
 startDate="2025-01-01"
 endDate="2025-12-01"

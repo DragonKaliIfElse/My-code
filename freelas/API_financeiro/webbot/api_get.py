@@ -88,9 +88,9 @@ def all_data(func):
 def main():
     # Inicializa a API
     api = SiengeAPI(
-        subdomain="engeplan",
-        password="l2dCJQaD5y21QB009C8J7nEawnpt1jmR",
-        token="ZW5nZXBsYW4tYmk6bDJkQ0pRYUQ1eTIxUUIwMDlDOEo3bkVhd25wdDFqbVI"  # ou deixa None para gerar automaticamente
+        subdomain="",
+        password="",
+        token=""  # ou deixa None para gerar automaticamente
     )
 
     try:
