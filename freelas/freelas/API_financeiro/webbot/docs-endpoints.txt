@@ -1,0 +1,180 @@
+https://api.sienge.com.br/docs/general-information.html
+Valores coletados: []
+https://api.sienge.com.br/docs/general-rest.html
+Valores coletados: []
+https://api.sienge.com.br/docs/html-files/building-projects-progress-logs-v1.html
+Valores coletados: ['/building-projects/{buildingId}/progress-logs', '/building-projects/progress-logs', '/building-projects/{buildingId}/progress-logs/{measurementNumber}', '/building-projects/{buildingId}/progress-logs/{measurementNumber}/items/{buildingUnitId}']
+https://api.sienge.com.br/docs/html-files/prepayment-slip-register-v1.html
+Valores coletados: ['/prepayment-slip-register', '/prepayment-slip-register']
+https://api.sienge.com.br/docs/html-files/creditor-report-v1.html
+Valores coletados: ['/creditor-report/pdf']
+https://api.sienge.com.br/docs/html-files/trial-balance-v1.html
+Valores coletados: ['/trial-balance']
+https://api.sienge.com.br/docs/html-files/fixed-assets-v1.html
+Valores coletados: ['/patrimony/fixed']
+https://api.sienge.com.br/docs/html-files/movable-assets-v1.html
+Valores coletados: ['/patrimony/movable']
+https://api.sienge.com.br/docs/html-files/building-calendar-v1.html
+Valores coletados: ['/building-projects/{buildingId}/calendar', '/building-projects/{buildingId}/calendar', '/building-projects/{buildingId}/calendar/days-off', '/building-projects/{buildingId}/calendar/days-off', '/building-projects/{buildingId}/calendar/days-off']
+https://api.sienge.com.br/docs/html-files/cost-center-v1.html
+Valores coletados: ['/cost-centers/{costCenterId}', '/cost-centers/{costCenterId}/available', '/cost-centers', '/cost-centers/immediate-register-settings']
+https://api.sienge.com.br/docs/html-files/customers-v1.html
+Valores coletados: ['/customers', '/customers', '/customers/{id}', '/customers/{id}', '/customers/{id}/phones', '/customers/{id}/spouse', '/customers/{id}/familyIncomes', '/customers/{id}/addresses/{type}', '/customers/{id}/attachments', '/customers/{id}/attachments', '/customers/{id}/attachments/{attachmentId}', '/customers/{id}/procurator']
+https://api.sienge.com.br/docs/html-files/commissions-v1.html
+Valores coletados: ['/commissions', '/commissions/{id}', '/commissions/{id}', '/commissions/{id}', '/commissions', '/commissions/authorize', '/commissions/cancel', '/commissions/release', '/commissions/countFilters', '/commissions/{id}/brokers/{idCorretor}', '/commissions/{id}/brokers', '/commissions/configurations/brokers', '/commissions/configurations/brokers', '/commissions/configurations/brokers/{id}', '/commissions/configurations/brokers/{id}', '/commissions/configurations/enterprises', '/commissions/configurations/enterprises/{id}', '/commissions/configurations/enterprises/{id}']
+https://api.sienge.com.br/docs/html-files/commissions-forecasts-v1.html
+Valores coletados: ['/sales-commissions', '/sales-commissions-forecasts']
+https://api.sienge.com.br/docs/html-files/accountancy-accounts-v1.html
+Valores coletados: ['/accountancy/accounts', '/accountancy/accounts/{id}']
+https://api.sienge.com.br/docs/html-files/checking-accounts-v1.html
+Valores coletados: ['/checking-accounts']
+https://api.sienge.com.br/docs/html-files/sales-contracts-v1.html
+Valores coletados: ['/sales-contracts', '/sales-contracts', '/sales-contracts/{id}', '/sales-contracts/{id}', '/sales-contracts/{id}', '/sales-contracts/{id}/cancellation', '/sales-contracts/{id}/attachments', '/sales-contracts/{id}/attachments', '/sales-contracts/{id}/attachments/{attachmentId}', '/sales-contracts/{id}/guarantors', '/sales-contracts/{id}/guarantors', '/sales-contracts/{id}/guarantors/{guarantorId}', '/sales-contracts/{id}/guarantors/{guarantorId}', '/sales-contracts/{id}/guarantors/{guarantorId}/phones']
+https://api.sienge.com.br/docs/html-files/contracts-v1.html
+Valores coletados: ['/supply-contracts/all', '/supply-contracts', '/supply-contracts/attachments/all', '/supply-contracts/attachments', '/supply-contracts/attachments', '/supply-contracts/buildings', '/supply-contracts/items', '/supply-contracts/authorize', '/supply-contracts/disapprove']
+https://api.sienge.com.br/docs/html-files/purchase-quotations-v1.html
+Valores coletados: ['/purchase-quotations', '/purchase-quotations/all/negotiations', '/purchase-quotations/{purchaseQuotationId}/items', '/purchase-quotations/{purchaseQuotationId}/items/from-purchase-request', '/purchase-quotations/{purchaseQuotationId}/items/{purchaseQuotationItemNumber}/suppliers', '/purchase-quotations/{purchaseQuotationId}/suppliers/{supplierId}/negotiations', '/purchase-quotations/{purchaseQuotationId}/suppliers/{supplierId}/negotiations/latest/authorize', '/purchase-quotations/{purchaseQuotationId}/suppliers/{supplierId}/negotiations/{negotiationNumber}', '/purchase-quotations/{purchaseQuotationId}/suppliers/{supplierId}/negotiations/{negotiationNumber}/items/{quotationItemNumber}', '/purchase-quotations/comparison-map/pdf']
+https://api.sienge.com.br/docs/html-files/creditor-v1.html
+Valores coletados: ['/creditors', '/creditors', '/creditors/{creditorId}', '/creditors/{creditorId}', '/creditors/{creditorId}/bank-informations', '/creditors/{creditorId}/bank-informations', '/creditors/{creditorId}/bank-informations/{banckInformationId}', '/creditors/{creditorId}/pix-informations', '/creditors/{creditorId}/pix-informations', '/creditors/{creditorId}/pix-informations/{pixInformationId}', '/creditors/{creditorId}/phone/{phoneId}', '/creditors/{creditorId}/contact/{contactId}', '/creditors/{creditorId}/procurator/{procuratorId}', '/creditors/{creditorId}/agents', '/creditors/{creditorId}/payslip-desoneration-years', '/creditors/{creditorId}/activate', '/creditors/{creditorId}/deactivate']
+https://api.sienge.com.br/docs/html-files/departments-v1.html
+Valores coletados: ['/departments/{departmentId}', '/departments']
+https://api.sienge.com.br/docs/html-files/construction-daily-report-v1.html
+Valores coletados: ['/construction-daily-report', '/construction-daily-report', '/construction-daily-report/{buildingId}/{constructionDailyId}', '/construction-daily-report/{buildingId}/{constructionDailyId}', '/construction-daily-report/{buildingId}/{constructionDailyId}/attachments', '/construction-daily-report/{buildingId}/{constructionDailyId}/attachments/{attachmentId}', '/construction-daily-report/{buildingId}/{constructionDailyId}/events', '/construction-daily-report/{buildingId}/{constructionDailyId}/events', '/construction-daily-report/{buildingId}/{constructionDailyId}/tasks', '/construction-daily-report/{buildingId}/{constructionDailyId}/tasks', '/construction-daily-report/{buildingId}/{constructionDailyId}/crews', '/construction-daily-report/{buildingId}/{constructionDailyId}/crews', '/construction-daily-report/{buildingId}/{constructionDailyId}/equipments', '/construction-daily-report/{buildingId}/{constructionDailyId}/equipments', '/construction-daily-report/event-type', '/construction-daily-report/types']
+https://api.sienge.com.br/docs/html-files/document-identification-v1.html
+Valores coletados: ['/document-identifications/{documentIdentificationId}']
+https://api.sienge.com.br/docs/html-files/enterprise-v1.html
+Valores coletados: ['/enterprises/{enterpriseId}', '/enterprises', '/enterprises/{enterpriseId}/groupings']
+https://api.sienge.com.br/docs/html-files/company-v1.html
+Valores coletados: ['/companies/{companyId}', '/companies']
+https://api.sienge.com.br/docs/html-files/civil-status-v1.html
+Valores coletados: ['/civil-status', '/civil-status']
+https://api.sienge.com.br/docs/html-files/stock-inventories-v1.html
+Valores coletados: ['/stock-inventories/{costCenterId}/items', '/stock-inventories/{costCenterId}/items/{resourceId}/building-appropriation', '/stock-reservations', '/stock-reservations/{reservationId}/items', '/stock-reservations/{reservationId}/movements', '/stock-movements', '/stock-movements/transfer', '/inventory-movements/{id}', '/inventory-movements']
+https://api.sienge.com.br/docs/html-files/customer-financial-statements-v1.html
+Valores coletados: ['/customer-financial-statements', '/customer-financial-statements', '/customer-financial-statements/pdf']
+https://api.sienge.com.br/docs/html-files/accounts-statements-v1.html
+Valores coletados: ['/accounts-statements']
+https://api.sienge.com.br/docs/html-files/accountancy-closingaccountancy-v1.html
+Valores coletados: ['/closingaccountancy']
+https://api.sienge.com.br/docs/html-files/payment-slip-notification-v1.html
+Valores coletados: ['/payment-slip-notification', '/payment-slip-notification']
+https://api.sienge.com.br/docs/html-files/overdue-receivable-v1.html
+Valores coletados: ['/overdue-receivable-bill']
+https://api.sienge.com.br/docs/html-files/current-debit-balance-v1.html
+Valores coletados: ['/current-debit-balance', '/current-debit-balance/pdf']
+https://api.sienge.com.br/docs/html-files/resource-groups-v1.html
+Valores coletados: ['/resource-groups']
+https://api.sienge.com.br/docs/html-files/collections-notification-history-v1.html
+Valores coletados: ['/collections-notification-history/{collectionNotificationHistoryId}']
+https://api.sienge.com.br/docs/html-files/indexers-v1.html
+Valores coletados: ['/indexers']
+https://api.sienge.com.br/docs/html-files/tax-information-v1.html
+Valores coletados: ['/bills/{billId}/tax-information', '/bills/{billId}/tax-information/items']
+https://api.sienge.com.br/docs/html-files/customer-income-tax-v1.html
+Valores coletados: ['/customer-income-tax/report', '/customer-income-tax/report/pdf']
+https://api.sienge.com.br/docs/html-files/building-cost-estimation-resources-v1.html
+Valores coletados: ['/building-cost-estimations/{buildingId}/resources', '/building-cost-estimations/{buildingId}/resources', '/building-cost-estimations/{buildingId}/resources/{id}', '/building-cost-estimations/{buildingId}/resources/{id}']
+https://api.sienge.com.br/docs/html-files/building-cost-estimation-cost-estimate-resources-v1.html
+Valores coletados: ['/building-cost-estimations/{buildingId}/cost-estimate-resources']
+https://api.sienge.com.br/docs/html-files/accountancy-entries-v1.html
+Valores coletados: ['/accountancy/entries', '/accountancy/entries', '/accountancy/entries/async', '/accountancy/entries/async/status']
+https://api.sienge.com.br/docs/html-files/accountancy-entrygenerator-entrybatches-v1.html
+Valores coletados: ['/accountancy/entry-generator/entry-batches', '/accountancy/entry-generator/entry-batches/{id}', '/accountancy/entry-generator/entry-batches/{id}/entries', '/accountancy/entry-generator/entries', '/accountancy/entry-generator/entry-batches/{id}/entries/{entryId}']
+https://api.sienge.com.br/docs/html-files/property-rental-v1.html
+Valores coletados: ['/property-rental', '/property-rental']
+https://api.sienge.com.br/docs/html-files/sites-v1.html
+Valores coletados: ['/sites']
+https://api.sienge.com.br/docs/html-files/accountancy-batch-v1.html
+Valores coletados: ['/batch', '/batch']
+https://api.sienge.com.br/docs/html-files/real-estate-map-v1.html
+Valores coletados: ['/real-estate-map']
+https://api.sienge.com.br/docs/html-files/measurement-v1.html
+Valores coletados: ['/supply-contracts/measurements/all', '/supply-contracts/measurements', '/supply-contracts/measurements', '/supply-contracts/measurements/items', '/supply-contracts/measurements/clearing', '/supply-contracts/measurements/attachments/all', '/supply-contracts/measurements/attachments', '/supply-contracts/measurements/attachments', '/supply-contracts/measurements/authorize', '/supply-contracts/measurements/disapprove']
+https://api.sienge.com.br/docs/html-files/cities-v1.html
+Valores coletados: ['/cities']
+https://api.sienge.com.br/docs/html-files/purchase-invoices-v1.html
+Valores coletados: ['/purchase-invoices/{sequentialNumber}', '/purchase-invoices/{sequentialNumber}/items', '/purchase-invoices', '/purchase-invoices/{sequentialNumber}/items/purchase-orders/delivery-schedules', '/purchase-invoices/deliveries-attended']
+https://api.sienge.com.br/docs/html-files/nfe-api-v1.html
+Valores coletados: ['/nfes', '/nfes/{nfeKey}', '/nfes/{nfeKey}/issuers-recipients', '/nfes/{nfeKey}/payments', '/nfes/{nfeKey}/deliveries', '/nfes/{nfeKey}/linked-nfes', '/nfes/{nfeKey}/icms', '/nfes/{nfeKey}/carriers', '/nfes/{nfeKey}/issqn', '/nfes/{nfeKey}/itens', '/nfes/{nfeKey}/itens/{itemId}/ipi', '/nfes/{nfeKey}/itens/{itemId}/pis-cofins', '/nfes/{nfeKey}/itens/{itemId}/simplified-icms', '/nfes/{nfeKey}/itens/{itemId}/issqn', '/nfes/{nfeKey}/itens/{itemId}/icms']
+https://api.sienge.com.br/docs/html-files/building-cost-estimations-v1.html
+Valores coletados: ['/building-cost-estimations/{buildingId}/sheets', '/building-cost-estimations/{buildingId}/sheets/{building_unit_id}/items']
+https://api.sienge.com.br/docs/html-files/parameters-v1.html
+Valores coletados: ['/parameters/{id}']
+https://api.sienge.com.br/docs/html-files/purchase-orders-v1.html
+Valores coletados: ['/purchase-orders', '/purchase-orders/{purchaseOrderId}', '/purchase-orders/{purchaseOrderId}/items', '/purchase-orders/{purchaseOrderId}/items/{itemNumber}', '/purchase-orders/{purchaseOrderId}/items/{itemNumber}/delivery-schedules', '/purchase-orders/{purchaseOrderId}/items/{itemNumber}/buildings-appropriations', '/purchase-orders/{purchaseOrderId}/totalization', '/purchase-orders/{purchaseOrderId}/direct-billing', '/purchase-orders/{purchaseOrderId}/authorize', '/purchase-orders/{purchaseOrderId}/authorize', '/purchase-orders/{purchaseOrderId}/disapprove', '/purchase-orders/{purchaseOrderId}/disapprove', '/purchase-orders/{purchaseOrderId}/attachments', '/purchase-orders/{purchaseOrderId}/attachments', '/purchase-orders/{purchaseOrderId}/attachments/{attachmentNumber}', '/purchase-orders/{purchaseOrderId}/supplier-evaluation-criteria', '/purchase-orders/{purchaseOrderId}/evaluation', '/purchase-orders/{purchaseOrderId}/evaluation', '/purchase-orders/{purchaseOrderId}/analysis/pdf']
+https://api.sienge.com.br/docs/html-files/building-projects-v1.html
+Valores coletados: ['/building-projects/{buildingId}/sheets/{buildingUnitId}/tasks', '/building-projects/{buildingId}/sheets/{buildingUnitId}/tasks']
+https://api.sienge.com.br/docs/html-files/payment-categories-v1.html
+Valores coletados: ['/payment-categories/{paymentCategoriesId}', '/payment-categories']
+https://api.sienge.com.br/docs/html-files/bearers-receivable-v1.html
+Valores coletados: ['/bearers-receivable']
+https://api.sienge.com.br/docs/html-files/professions-v1.html
+Valores coletados: ['/professions', '/professions', '/professions/{id}']
+https://api.sienge.com.br/docs/html-files/remade-installments-v1.html
+Valores coletados: ['/remade-installments', '/remade-installments']
+https://api.sienge.com.br/docs/html-files/unit-bookings-v1.html
+Valores coletados: ['/unit-bookings', '/unit-bookings/units/{id}/deactivate']
+https://api.sienge.com.br/docs/html-files/accounts-balances-v1.html
+Valores coletados: ['/accounts-balances']
+https://api.sienge.com.br/docs/html-files/email-current-debit-balance-v1.html
+Valores coletados: ['/email-current-debit-balance']
+https://api.sienge.com.br/docs/html-files/total-current-debit-balance-v1.html
+Valores coletados: ['/total-current-debit-balance']
+https://api.sienge.com.br/docs/html-files/purchase-requests-v1.html
+Valores coletados: ['/purchase-requests/{purchaseRequestId}', '/purchase-requests/{purchaseRequestId}/authorize', '/purchase-requests/{purchaseRequestId}/disapproval', '/purchase-requests', '/purchase-requests/all/items', '/purchase-requests/{purchaseRequestId}/items/{purchaseRequestItemNumber}/buildings-appropriations', '/purchase-requests/{purchaseRequestId}/items/{purchaseRequestItemNumber}/delivery-requirements', '/purchase-requests/{purchaseRequestId}/items', '/purchase-requests/{purchaseRequestId}/items/{purchaseRequestItemNumber}/authorize', '/purchase-requests/{purchaseRequestId}/items/{purchaseRequestItemNumber}/disapproval', '/purchase-requests/{purchaseRequestId}/attachments', '/purchase-requests/{purchaseRequestId}/attachments/{attachmentNumber}']
+https://api.sienge.com.br/docs/html-files/price-tables-v1.html
+Valores coletados: ['/price-tables']
+https://api.sienge.com.br/docs/html-files/cost-databases-v1.html
+Valores coletados: ['/cost-databases', '/cost-databases/{id}/resources', '/cost-databases/{id}/resources/{resourceId}', '/cost-databases/{id}/work-items', '/cost-databases/{id}/work-items-assemblies']
+https://api.sienge.com.br/docs/html-files/property-types-v1.html
+Valores coletados: ['/property-types', '/property-types/{id}']
+https://api.sienge.com.br/docs/html-files/customer-types-v1.html
+Valores coletados: ['/customer-types']
+https://api.sienge.com.br/docs/html-files/payment-condition-types-v1.html
+Valores coletados: ['/payment-condition-types']
+https://api.sienge.com.br/docs/html-files/bill-debt-v1.html
+Valores coletados: ['/bills', '/bills', '/bills/by-change-date', '/bills/{billId}', '/bills/{billId}', '/eletronic-invoice-bills', '/bills/{billId}/installments', '/bills/{billId}/installments/{installmentId}', '/bills/{billId}/taxes', '/bills/{billId}/budget-categories', '/bills/{billId}/departments-cost', '/bills/{billId}/buildings-cost', '/bills/{billId}/buildings-cost', '/bills/{billId}/installments/{installmentId}/payment-information/bank-transfer', '/bills/{billId}/installments/{installmentId}/payment-information/bank-transfer', '/bills/{billId}/installments/{installmentId}/payment-information/boleto-bancario', '/bills/{billId}/installments/{installmentId}/payment-information/boleto-bancario', '/bills/{billId}/installments/{installmentId}/payment-information/boleto-concessionaria', '/bills/{billId}/installments/{installmentId}/payment-information/boleto-concessionaria', '/bills/{billId}/installments/{installmentId}/payment-information/boleto-tax', '/bills/{billId}/installments/{installmentId}/payment-information/boleto-tax', '/bills/{billId}/installments/{installmentId}/payment-information/dda', '/bills/{billId}/installments/{installmentId}/payment-information/dda', '/bills/{billId}/installments/{installmentId}/payment-information/darf-tax', '/bills/{billId}/installments/{installmentId}/payment-information/darf-tax', '/bills/{billId}/installments/{installmentId}/payment-information/darj-tax', '/bills/{billId}/installments/{installmentId}/payment-information/darj-tax', '/bills/{billId}/installments/{installmentId}/payment-information/fgts-tax', '/bills/{billId}/installments/{installmentId}/payment-information/fgts-tax', '/bills/{billId}/installments/{installmentId}/payment-information/gare-tax', '/bills/{billId}/installments/{installmentId}/payment-information/gare-tax', '/bills/{billId}/installments/{installmentId}/payment-information/inss-tax', '/bills/{billId}/installments/{installmentId}/payment-information/inss-tax', '/bills/{billId}/installments/{installmentId}/payment-information/pix', '/bills/{billId}/installments/{installmentId}/payment-information/pix', '/bills/{billId}/attachments', '/bills/{billId}/attachments', '/bills/{billId}/attachments/{attachmentId}', '/bills/{billId}/units', '/bills/{billId}/units']
+https://api.sienge.com.br/docs/html-files/accounts-receivable-v1.html
+Valores coletados: ['/accounts-receivable/receivable-bills', '/accounts-receivable/receivable-bills/{receivableBillId}', '/accounts-receivable/receivable-bills/{receivableBillId}/installments', '/accounts-receivable/receivable-bills/{receivableBillId}/installments/{installmentId}/change-due-date', '/accounts-receivable/{receivableBillId}/budget-categories']
+https://api.sienge.com.br/docs/html-files/unit-v1.html
+Valores coletados: ['/units/{unitId}', '/units/{unitId}', '/units', '/units', '/units/{unitId}/child-unit', '/units/{unitId}/groupings', '/units/{unitId}/attachments', '/units/characteristics', '/units/characteristics', '/units/{unitId}/characteristics', '/units/situations', '/units/situations']
+https://api.sienge.com.br/docs/html-files/resource-units-of-movement-v1.html
+Valores coletados: ['/building-cost-estimations/{buildingId}/resource-units-of-movement']
+https://api.sienge.com.br/docs/general-bulk.html
+Valores coletados: []
+https://api.sienge.com.br/docs/html-files/bulk-data-sales-v1.html
+Valores coletados: ['/sales']
+https://api.sienge.com.br/docs/html-files/bulk-data-purchase-quotations-v1.html
+Valores coletados: ['/purchase-quotations']
+https://api.sienge.com.br/docs/html-files/bulk-data-customer-extract-history-v1.html
+Valores coletados: ['/customer-extract-history']
+https://api.sienge.com.br/docs/html-files/bulk-data-customer-debt-balance.html
+Valores coletados: ['/customer-debt-balance']
+https://api.sienge.com.br/docs/html-files/bulk-data-building-resource-v1.html
+Valores coletados: ['/building/resources']
+https://api.sienge.com.br/docs/html-files/bulk-data-building-cost-estimations-v1.html
+Valores coletados: ['/building-cost-estimation-items']
+https://api.sienge.com.br/docs/html-files/bulk-data-bank-movement-v1.html
+Valores coletados: ['/bank-movement', '/bank-movement/by-movements']
+https://api.sienge.com.br/docs/html-files/bulk-data-business-budget-v1.html
+Valores coletados: ['/business-budget']
+https://api.sienge.com.br/docs/html-files/bulk-data-outcome-v1.html
+Valores coletados: ['/outcome', '/outcome/by-bills']
+https://api.sienge.com.br/docs/html-files/bulk-data-income-v1.html
+Valores coletados: ['/income', '/income/by-bills']
+https://api.sienge.com.br/docs/html-files/bulk-data-invoice-items-v1.html
+Valores coletados: ['/invoice-itens']
+https://api.sienge.com.br/docs/html-files/bulk-data-account-cost-center-balance-v1.html
+Valores coletados: ['/accountancy/accountCostCenterBalance']
+https://api.sienge.com.br/docs/html-files/bulk-data-account-company-balance-v1.html
+Valores coletados: ['/accountancy/accountBalance']
+https://api.sienge.com.br/docs/html-files/bulk-data-defaulters-receivable-bills-v1.html
+Valores coletados: ['/defaulters-receivable-bills', '/defaulters-receivable-bills/by-aging']
+https://api.sienge.com.br/docs/general-hooks.html
+Valores coletados: []
+https://api.sienge.com.br/docs/general-hooks-types.html
+Valores coletados: []
+https://api.sienge.com.br/docs/html-files/hooks-v1.html
+Valores coletados: ['/hooks', '/hooks', '/hooks/{hookId}', '/hooks/{hookId}']
+
+Total de links encontrados: 89
