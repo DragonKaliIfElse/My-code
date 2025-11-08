@@ -1,0 +1,27 @@
+#!/bin/bash
+mode="pt"
+while true
+do
+    if [ "$mode" == "pt" ]; then
+        tradutor
+        case "$?" in
+            0) mode="en";;
+            1) mode="clip";;
+        esac
+    elif [ "$mode" == "en" ]; then
+        translate 
+        case "$?" in
+            0) mode="pt";;
+            1) mode="clip";;
+        esac
+    elif [ "$mode" == "clip" ];then
+        clip-trans
+        case "$?" in
+            0) mode="pt";;
+        esac
+    else
+        echo "invalid argument: $mode"
+        read mode
+    fi
+done
+

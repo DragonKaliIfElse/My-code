@@ -1,0 +1,7 @@
+#!/bin/fish
+
+set -Ux http_proxy "http://169.254.1.1:8080"
+set -Ux https_proxy "http://169.254.1.1:8080"
+set -Ux socks5_proxy "socks5://127.0.0.1:1080"
+
+echo 'proxy activated'

@@ -1,0 +1,18 @@
+#!/bin/bash
+clip2=""
+i=0
+while [ true ];do
+    sleep 1
+    clip1=$(wl-paste)
+    if [ "$clip1" != "$clip2" ];then 
+        ((i++))
+        clear
+        echo "cancel"
+        trans -e google :pt "$clip1"
+        clip2=$(wl-paste)
+    elif [ "$clip1" == "cancel" ];then
+        exit 0
+    fi
+done
+
+

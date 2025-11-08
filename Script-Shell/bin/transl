@@ -1,0 +1,1 @@
+alacritty -e fish -c "translator"

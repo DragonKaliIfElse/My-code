@@ -1,0 +1,8 @@
+#!/bin/bash
+name=$(echo "$1" | awk -F'.' '{print$1}')
+
+pandoc "$1" -o "$name.html" && firefox "$name.html"
+sleep 1
+rm "$name.html"
+
+

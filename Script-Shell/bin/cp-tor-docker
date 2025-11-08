@@ -1,0 +1,4 @@
+#!/bin/bash
+
+container_id=$(docker ps | grep 5900 |awk '{print$1}')
+docker cp "$container_id":"/app/Browser/Downloads/$1" .
