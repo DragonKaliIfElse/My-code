@@ -1,7 +1,0 @@
-#!/bin/fish
-
-set -eU http_proxy
-set -eU https_proxy
-set -eU socks5_proxy
-
-echo 'proxy deactivated'

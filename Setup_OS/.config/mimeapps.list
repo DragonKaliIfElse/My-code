@@ -1,0 +1,18 @@
+[Added Associations]
+application/epub+zip=firefox.desktop;org.pwmt.zathura-pdf-mupdf.desktop;
+application/pdf=zathura-3.desktop;zathura-2.desktop;zathura.desktop;
+image/jpeg=swayimg-4.desktop;swayimg-3.desktop;swayimg-2.desktop;
+text/plain=nvim-2.desktop;
+video/mp4=mpv-2.desktop;
+
+[Default Applications]
+application/pdf=zathura-3.desktop;
+application/x-extension-burp=install4j_1jcj4sg-BurpSuiteCommunity.desktop
+image/jpeg=swayimg-4.desktop;
+text/html=firefox.desktop
+text/plain=nvim-2.desktop;
+video/mp4=mpv-2.desktop;
+x-scheme-handler/about=firefox.desktop
+x-scheme-handler/http=firefox.desktop
+x-scheme-handler/https=firefox.desktop
+x-scheme-handler/unknown=firefox.desktop
