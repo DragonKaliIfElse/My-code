@@ -40,6 +40,7 @@
         "wireplumber",
         //"custom/screenshot_t",
         "custom/wallpaper",
+        "custom/opacity",
         "tray",
         "clock#date",
         "custom/power"
@@ -49,7 +50,10 @@
     // -------------------------------------------------------------------------
     // Modules
     // -------------------------------------------------------------------------
-
+    "custom/opacity": {
+        "format": "",
+        "on-click": "toggle-opacity"
+    },
     "custom/sp1": {
         "format": " | ",
         "tooltip": false
