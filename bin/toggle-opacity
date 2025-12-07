@@ -1,0 +1,7 @@
+#!/bin/bash
+DECORAION_PATH='/home/4n4tm4n/.config/hypr/config/decorations.conf'
+if grep -q "active_opacity = 1" "$DECORAION_PATH"; then
+    sed -i 's/active_opacity = 1/active_opacity = 0.9/' $DECORAION_PATH
+else
+    sed -i 's/active_opacity = 0.9/active_opacity = 1/' $DECORAION_PATH
+fi

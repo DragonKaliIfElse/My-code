@@ -1,0 +1,10 @@
+#!/bin/bash
+while [ true ]; do
+    if [ "$1" == "" ]; then
+        sleep 300
+        toggle-wallpaper.sh
+    else
+        sleep "$1"
+        toggle-wallpaper.sh
+    fi
+done
