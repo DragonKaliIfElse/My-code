@@ -98,11 +98,18 @@ window#waybar.hidden {
 #custom-weather.rainyDay,
 #custom-weather.rainyNight,
 #custom-weather.showyIcyDay,
+#custom-wallpaper,
 #custom-weather.snowyIcyNight,
 #custom-weather.default {
     background-color: #111827;
     border-radius: 14px;
     padding: 6px;  /* Adjusted padding */
+}
+
+#custom-wallpaper {
+    color: #fb958b;
+    background-color: #111827;
+    padding: 6px;
 }
 
 #custom-screenshot_t {
