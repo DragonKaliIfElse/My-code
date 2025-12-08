@@ -34,3 +34,7 @@ cd paru
 makepkg -si
 
 paru -Sy $(cat ./packages)
+
+cp -r ./Setup_archOS/.config $HOME/.config
+
+cp ./bin/* /usr/local/bin/
