@@ -29,4 +29,8 @@ pacman-key --lsign-key 882DCFE48E2051D48E2562ABF3B607488DB35A47
 pacman-key --recv-keys 1F0716DC94015CAC77FA65B619A2282AFCA8A81E
 pacman-key --lsign-key 1F0716DC94015CAC77FA65B619A2282AFCA8A81E
 
-pacman -Sy
+git clone https://aur.archlinux.org/paru.git
+cd paru
+makepkg -si
+
+paru -Sy $(cat ./packages)
