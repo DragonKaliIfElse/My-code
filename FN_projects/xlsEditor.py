@@ -1,6 +1,38 @@
 from openpyxl.styles import Border, Font, Alignment, Side
 from openpyxl import Workbook
 from openpyxl.drawing.image import Image
+from openpyxl.chart import ScatterChart, Reference, Series
+from openpyxl.chart.text import RichText
+from openpyxl.drawing.text import CharacterProperties, Paragraph, ParagraphProperties
+
+def add_grafico(ws, linha_inicial, linha_final):
+
+    chart = ScatterChart()
+    chart.title = "Diagrama de CravaÃ§Ã£o"
+    cp = CharacterProperties(sz=1800)
+    p = Paragraph(pPr=ParagraphProperties(defRPr=cp),
+                  endParaRPr=cp)
+    chart.title.tx.rich.p[0].pPr = p.pPr
+    chart.style = 2
+    chart.x_axis.title = "NÃºmero de Golpes"
+    chart.y_axis.title = "Profundidade (m)"
+
+    chart.y_axis.scaling.orientation = "maxMin"
+    chart.x_axis.crosses = "max"
+
+    xvalues = Reference(ws, min_col=2, min_row=linha_inicial, max_row=linha_final)
+    yvalues = Reference(ws, min_col=1, min_row=linha_inicial, max_row=linha_final)
+
+    series = Series(yvalues, xvalues, title="")
+
+    chart.series.append(series)
+
+    series.graphicalProperties.line.solidFill = "FF0000"
+
+    chart.width = 12
+    chart.height = 18
+
+    ws.add_chart(chart, "D11")
 
 def add_border(cell, top=None, bottom=None, left=None, right=None):
     borda_atual = cell.border
@@ -187,20 +219,22 @@ def gera_aba(wb, nome_aba: str, cliente: str, obra: str, local: str, nega: str, 
     '''ws.row_dimensions.group(80,1048576, hidden=True)
     ws.column_dimensions.group('M','XFD', hidden=True)'''
 
+    add_grafico(ws, 14, 70)
+
 def main():
     golpes = []
     for i in range(32+1):
         golpes.append(i)
     gera_arquivo(nome_arquivo='teste.xlsx',
                  nome_aba='aba',
-                 cliente='testison',
-                 obra='obra teste',
+                 cliente='josiscleison',
+                 obra='obra meu pay',
                  local='minha casa',
-                 nega='25/04/2002',
-                 area='seila',
+                 nega='20/20/20',
+                 area='meu quintal',
                  be='outro que nao sei',
-                 estaca='estaca teste',
-                 secao='secao teste',
+                 estaca='estaca teste 58000',
+                 secao='secao teste 209409234',
                  data_inicial='25/05/2020',
                  data_final='25/05/2021',
                  comp_cravado=32.0,
