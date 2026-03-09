@@ -29,7 +29,7 @@ class MainWindow(QMainWindow):
     def __init__(self):
         super().__init__()
 
-        self.setWindowTitle("Curso de Python e PySide6")
+        self.setWindowTitle("Excel Bate Estaca")
 
         # SETUP MAIN WINDOW
         self.ui = UI_MainWindow()
@@ -47,18 +47,13 @@ class MainWindow(QMainWindow):
         # Btn settings
         self.ui.settings_btn.clicked.connect(self.show_page_3)
 
-        # Change text
-        self.ui.ui_pages.btn_change_text.clicked.connect(self.change_text)
+        # função
+        #self.ui.ui_pages.btn_change_text.clicked.connect(self.change_text)
 
         # EXIBI A NOSSA APLICAÇÃO
         self.show()
 
     # Change text - Home Page
-    def change_text(self):
-        text = self.ui.ui_pages.lineEdit.text()
-        new_text = "Olá, " + text
-        self.ui.ui_pages.label_3.setText(new_text)
-
     # Reset BTN Selection
     def reset_selection(self):
         for btn in self.ui.left_menu.findChildren(QPushButton):

@@ -143,7 +143,7 @@ class UI_MainWindow(object):
         self.top_bar_layout.setContentsMargins(10,0,10,0)
 
         # Left label
-        self.top_label_left = QLabel("Essa é minha primeira applicação com PySide6")
+        self.top_label_left = QLabel("Formulário de preenchimento de excel formatado para bate estaca")
 
         # Top spacer
         self.top_spacer = QSpacerItem(20,20, QSizePolicy.Expanding, QSizePolicy.Minimum)
@@ -175,13 +175,13 @@ class UI_MainWindow(object):
         self.bottom_bar_layout.setContentsMargins(10,0,10,0)
 
         # Left label
-        self.bottom_label_left = QLabel("Criado por: Wanderson M. Pimenta")
+        self.bottom_label_left = QLabel("Criado por: Eduardo Cruz")
 
         # Top spacer
         self.bottom_spacer = QSpacerItem(20,20, QSizePolicy.Expanding, QSizePolicy.Minimum)
 
         # Right label
-        self.bottom_label_right = QLabel("© 2021")
+        self.bottom_label_right = QLabel("© 2026")
 
         # Add to layout
         self.bottom_bar_layout.addWidget(self.bottom_label_left)
