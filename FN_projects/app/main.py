@@ -15,14 +15,18 @@
 # ///////////////////////////////////////////////////////////////
 
 # IMPORT MODULES
+from os.path import basename
 import sys
-import os 
+import os
+
+from openpyxl.chart import area_chart 
 
 # IMPORT QT CORE
 from qt_core import *
 
 # IMPORT MAIN WINDOW
 from gui.windows.main_window.ui_main_window import UI_MainWindow
+from xlsEditor import *
 
 # MAIN WINDOW
 class MainWindow(QMainWindow):
@@ -39,16 +43,18 @@ class MainWindow(QMainWindow):
         self.ui.toggle_button.clicked.connect(self.toggle_button)
 
         # Btn home
-        self.ui.btn_1.clicked.connect(self.show_page_1)
+        self.ui.btn_1.clicked.connect(self.show_page_add_planilha)
 
         # Btn widgets
-        self.ui.btn_2.clicked.connect(self.show_page_2)
+        #self.ui.btn_2.clicked.connect(self.show_page_formulario)
 
         # Btn settings
-        self.ui.settings_btn.clicked.connect(self.show_page_3)
+        #self.ui.settings_btn.clicked.connect(self.show_page_3)
 
-        # função
-        #self.ui.ui_pages.btn_change_text.clicked.connect(self.change_text)
+        #função
+        self.ui.ui_pages.adicionar_planilha_button.clicked.connect(self.show_page_formulario)
+        self.ui.ui_pages.salvar_button.clicked.connect(self.show_page_golpes)
+        self.ui.ui_pages.finalizar_button.clicked.connect(self.add_planilha_action)
 
         # EXIBI A NOSSA APLICAÇÃO
         self.show()
@@ -62,17 +68,65 @@ class MainWindow(QMainWindow):
             except:
                 pass
     
+    # função de adicionar planilha 
+    def add_planilha_action(self):
+        nome_planilha = self.ui.ui_pages.nome_planilha.text()
+        nome_arquivo = nome_planilha + '.xlsx'
+        altura_queda = self.ui.ui_pages.altura_queda.text()
+        comp_cravado = self.ui.ui_pages.comp_cravado.text()
+        data_final = self.ui.ui_pages.data_final.text()
+        data_inicial = self.ui.ui_pages.data_inicial.text()
+        peso_martelo = self.ui.ui_pages.peso_martelo.text()
+        secao = self.ui.ui_pages.secao.text()
+        area = self.ui.ui_pages.area.text()
+        be = self.ui.ui_pages.be.text()
+        cliente = self.ui.ui_pages.cliente.text()
+        estaca = self.ui.ui_pages.estaca.text()
+        local = self.ui.ui_pages.local.text()
+        nega = self.ui.ui_pages.nega.text()
+        obra = self.ui.ui_pages.obra.text()
+        nome_aba = self.ui.ui_pages.nome_aba.text()
+        golpes = []
+
+        for i in range(1, 57):
+            campo = getattr(self.ui.ui_pages, f"golpe_{i}")
+            golpe = campo.text()
+            if golpe == '': continue;
+            golpes.append(int(golpe))
+
+        gera_arquivo(nome_arquivo=nome_arquivo,
+                     nome_aba=nome_aba,
+                     cliente=cliente,
+                     obra=obra,
+                     local=local,
+                     nega=nega,
+                     area=area,
+                     be=be,
+                     estaca=estaca,
+                     secao=secao,
+                     data_inicial=data_inicial,
+                     data_final=data_final,
+                     comp_cravado=float(comp_cravado),
+                     peso_martelo=peso_martelo,
+                     altura_queda=float(altura_queda),
+                     golpes=golpes)
+
     # Btn home function
-    def show_page_1(self):
+    def show_page_golpes(self):
         self.reset_selection()
-        self.ui.pages.setCurrentWidget(self.ui.ui_pages.page_1)
-        self.ui.btn_1.set_active(True)
+        self.ui.pages.setCurrentWidget(self.ui.ui_pages.golpes)
+        self.ui.btn_2.set_active(True)
 
     # Btn widgets function
-    def show_page_2(self):
+    def show_page_formulario(self):
         self.reset_selection()
-        self.ui.pages.setCurrentWidget(self.ui.ui_pages.page_2)
+        self.ui.pages.setCurrentWidget(self.ui.ui_pages.formulario)
         self.ui.btn_2.set_active(True)
+
+    def show_page_add_planilha(self):
+        self.reset_selection()
+        self.ui.pages.setCurrentWidget(self.ui.ui_pages.add_planilha)
+        self.ui.btn_1.set_active(True)
 
     # Btn pase gettings
     def show_page_3(self):

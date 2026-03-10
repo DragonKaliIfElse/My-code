@@ -18,7 +18,7 @@
 from qt_core import *
 
 # IMPORT PAGES
-from gui.pages.ui_pages import Ui_application_pages
+from gui.pages.ui_pages import Ui_StackedWidget
 
 # IMPORT CUSTOM WIDGETS
 from gui.widgets.py_push_button import PyPushButton
@@ -160,9 +160,9 @@ class UI_MainWindow(object):
         # Application pages
         self.pages = QStackedWidget()
         self.pages.setStyleSheet("font-size: 12pt; color: #f8f8f2;")
-        self.ui_pages = Ui_application_pages()
+        self.ui_pages = Ui_StackedWidget()
         self.ui_pages.setupUi(self.pages)
-        self.pages.setCurrentWidget(self.ui_pages.page_1)
+        self.pages.setCurrentWidget(self.ui_pages.add_planilha)
 
         # BOTTOM BAR
         # ///////////////////////////////////////////////////////////////
