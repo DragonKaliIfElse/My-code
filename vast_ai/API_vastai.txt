@@ -1,0 +1,4825 @@
+API:
+API Introduction:
+<content>The raw REST API is intended for advanced users only. These endpoints offer maximum flexibility but require you to manage all aspects of integration yourself. Most users will have a significantly better experience using the CLI or the Python SDK, which handle these details for you. If you are not sure whether you need direct API access, you almost certainly don’t — start with the CLI or SDK instead.
+Welcome to Vast.ai’s API documentation. Our API allows you to programmatically manage GPU instances, handle machine operations, and automate your AI/ML workflow. Whether you’re running individual GPU instances or managing a fleet of machines, our API provides comprehensive control over all Vast.ai platform features.</content>
+Permissions and Authorization:
+<content>API Endpoints and Permission Categories
+This document outlines the various API endpoints and their associated permission categories, providing a clear reference for understanding the access control within our system.
+Every API Key has a list of permissions associated with it. Every user has the ability to create keys with restricted permissions on their own account. Users can also create restricted keys in team environments using the team-centric endpoints.
+Creating Custom Roles
+Accessing Role Management: Custom roles can be created and managed through the CLI. Team roles can be managed on the ‘Manage’ page by users with team_read level access.
+Defining Permissions: When creating a custom role, anyone can select from a wide range of permissions, such as instance creation, billing access, monitoring, etc. This allows for precise control over what each role can and cannot do.
+Assigning Custom Roles: Once a custom role is created, it can be assigned to team members through the team management interface.
+Important Elements
+constraints: Constraints can be added at different levels to enforce certain parameters of the body to be specific values
+params: You can use wildcards to represent placeholder values. (Useful if you want to generate many keys all doing similar operations)
+Examples
+The following json would create a user that has access to the specified categories. In this instance, someone with these permissions would be able to create an instance as well as access billing information
+{
+    "api": {
+        "misc": {},
+        "user_read":{},
+        "instance_read": {},
+        "instance_write": {},
+  "billing_read": {},
+  "billing_write": {}
+    }
+}
+The following json would create restricted access to only the presented categories. In this example, someone with these permissions would be able to create an instance, but they would not be able to access billing information
+{
+    "api": {
+        "misc": {},
+        "user_read":{},
+        "instance_read": {},
+        "instance_write": {}
+    }
+}
+You can see a full list of permission types as well as the endpoints attached to that permission below
+Permission Categories
+instance_read
+Show Instance
+Show Instances
+Show Logs
+Show SSH Keys
+Show Volumes
+Show Deposit
+The following permissions would allow a user to read the instance logs of instance id 1227 only
+{
+    "api": {
+        "instance_read": {
+            "api.instance.request_logs": {
+                "constraints": {
+                    "id": {
+                        "eq": 1227
+                    }
+                }
+            }
+        }
+    }
+}
+The following permissions would allow a user to read the instance logs of instance id from 1 to 2. Apikeys using this feature have to be created using the CLI call create api-key
+{
+    "api": {
+        "instance_read": {
+            "api.instance.request_logs": {
+                "constraints": {
+                    "id": {
+                        "lte": 2,
+                        "gte": 1
+                    }
+                }
+            }
+        }
+    }
+}
+instance_write
+{
+    "api": {
+          "instance_write": {}
+      }
+}
+Attach SSH Key
+Copy
+Cancel Copy
+Cloud Copy
+Cancel Sync
+Change Bid
+Create Instance
+Manage Instance
+Delete Instance
+Detach SSH Key
+Execute
+Prepay Instance
+Reboot Instance
+Recycle Instance
+Create Volume
+Delete Volume
+user_read
+{
+    "api": {
+          "user_read": {}
+      }
+}
+Show API Keys
+Show Connections
+Show Environment Variables
+Show IP Addresses
+Show SSH Keys
+Show Subaccounts
+Show User
+Search Templates
+user_write
+{
+    "api": {
+          "user_write": {}
+      }
+}
+Create API Key
+Delete API Key
+Create Environment Variable
+Update Environment Variable
+Delete Environment Variable
+Create SSH Key
+Update SSH Key
+Delete SSH Key
+Create Subaccount
+Set User
+Create Team
+Delete Team
+Create Template
+Edit Template
+Delete Template
+billing_read
+{
+    "api": {
+          "billing_read": {}
+      }
+}
+Search Invoices
+Show Invoices
+Show Earnings
+billing_write
+{
+    "api": {
+          "billing_write": {}
+      }
+}
+Transfer Credit
+machine_read
+{
+    "api": {
+          "machine_read": {}
+      }
+}
+Show Machines
+Show Reports
+machine_write
+{
+    "api": {
+          "machine_write": {}
+      }
+}
+Cancel Maintenance
+Cleanup Machine
+List Machine
+Remove Default Job
+Schedule Maintenance
+Set Default Job
+Set Minimum Bid
+Unlist Machine
+Add Network Disk
+Unlist Network Volume
+Unlist Volume
+misc
+{
+    "api": {
+          "misc": {}
+      }
+}
+Search Network Volumes
+Show Workergroups
+Create Workergroup
+Update Workergroup
+Delete Workergroup
+Show Endpoints
+Create Endpoint
+Delete Endpoint
+Search Benchmarks
+Search Offers
+Search Volumes
+team_read
+{
+    "api": {
+          "team_read": {}
+      }
+}
+Show Team Members
+Show Team Role
+Show Team Roles
+team_write
+{
+    "api": {
+          "team_write": {}
+      }
+}
+Invite Team Member
+Remove Team Member
+Create Team Role
+Update Team Role
+Remove Team Role</content>
+Templates:
+<content>Introduction
+A template in the Vast.ai API is a configuration bundle that stores default settings for instance creation. Instead of specifying every parameter each time you create an instance, you can reference a template by its hash_id and optionally override specific values.
+Templates are useful for:
+Standardization: Ensure all team members launch instances with consistent configurations
+Convenience: Avoid repeating the same parameters across multiple API calls
+Sharing: Share configurations via template hash ID
+For information about managing templates in the web interface, see Templates Introduction.
+Template Fields Reference
+When creating a template, the following fields can be configured:
+Field Type Description
+name string Required. Human-readable name for the template
+image string Required. Docker image path (e.g., vastai/pytorch)
+tag string Docker image tag. Defaults to latest
+desc string Description of the template
+readme string Longer documentation/readme content
+env string Environment variables and port mappings in Docker flag format (e.g., "-e VAR=val -p 8000:8000")
+onstart string Shell commands to run when instance starts
+runtype string Launch mode: ssh, jupyter, or args. Defaults to args
+args_str string Replaces the image’s Docker CMD. If the image defines an ENTRYPOINT, this is passed as arguments to it
+ssh_direct boolean Enable direct SSH connection (recommended with runtype: "ssh")
+use_ssh boolean Enable SSH access
+jup_direct boolean Enable direct Jupyter connection
+jupyter_dir string Directory to launch Jupyter from
+use_jupyter_lab boolean Use JupyterLab instead of Jupyter Notebook
+docker_login_repo string Required (use "" if not needed). Private Docker registry URL
+docker_login_user string Required (use "" if not needed). Username for private registry
+docker_login_pass string Required (use "" if not needed). Access token for private registry
+href string Link to Docker Hub or image documentation
+repo string Repository identifier (e.g., library/ubuntu)
+extra_filters object Default machine search filters (e.g., {"cuda_max_good": {"gte": 12.6}})
+recommended_disk_space number Recommended disk space in GB (default: 8)
+private boolean Whether the template is private
+volume_info object UI hint for volume configuration (not used for actual instance creation)
+Template Identifiers
+Templates have two primary identifiers:
+Identifier Type Description
+id integer Numeric identifier. Used for deleting templates
+hash_id string Content-based hash. Used for creating instances and editing templates
+Usage by operation:
+Create instance: Use template_hash_id
+Edit template: Use hash_id (via PUT)
+Delete template: Use numeric id
+Precedence Rules
+When you create an instance with both a template and additional parameters, the following precedence rules apply:
+Field Type Behavior
+Scalar fields (image, disk, runtype, etc.) Request value overrides template value
+env (dict) Merged. Template values retained, request values added. Conflicting keys use request value
+extra_filters (dict) Merged by key. Request values win on conflicts
+Example: Environment Variables
+When creating an instance, the env field is passed as a JSON object (dict). When you provide env in your request, it is merged with the template’s env — existing values are retained and new values are added.
+Templates store env as a Docker flag string (e.g., "-e VAR=val -p 8000:8000"), but instance creation uses a dict format. The API handles the conversion automatically when merging.
+Template configuration (string format):
+{
+  "env": "-e MODEL_ID=deepseek-ai/DeepSeek-R1-Distill-Llama-8B -e MAX_TOKENS=4096"
+}
+Instance creation request (dict format):
+{
+  "template_hash_id": "4e17788f74f075dd9aab7d0d4427968f",
+  "env": {
+    "MODEL_ID": "mistralai/Mistral-7B-v0.1",
+    "HF_TOKEN": "hf_xxx"
+  }
+}
+Resulting instance environment:
+MODEL_ID=mistralai/Mistral-7B-v0.1 (request overrides template)
+MAX_TOKENS=4096 (retained from template)
+HF_TOKEN=hf_xxx (added from request)
+Cookbook Examples
+Search for Templates
+Search for templates using select_filters with comparison operators.
+Query Syntax:
+select_filters = { "field": { "op": value } }
+Operators: eq, neq, lt, lte, gt, gte, in, notin
+Available Fields:
+Field Type Description
+creator_id int ID of creator
+created_at float Time of initial template creation (UTC epoch)
+count_created int Number of instances created (popularity)
+default_tag string Image default tag
+docker_login_repo string Image docker repository
+id int Template unique ID
+image string Image used for template
+jup_direct bool Supports jupyter direct
+hash_id string Unique hash ID of template
+name string Displayable name
+recent_create_date float Last time of instance creation (UTC epoch)
+recommended_disk_space float Min disk space required
+recommended bool Is template on recommended list
+ssh_direct bool Supports SSH direct
+tag string Image tag
+use_ssh bool Supports SSH (direct or proxy)
+curl
+Python
+# Search for recommended templates with SSH support
+curl -G "https://console.vast.ai/api/v0/template/" \
+  -H "Authorization: Bearer $VAST_API_KEY" \
+  --data-urlencode 'select_filters={"use_ssh":{"eq":true},"recommended":{"eq":true}}'
+
+# Search for popular templates (more than 100 instances created)
+curl -G "https://console.vast.ai/api/v0/template/" \
+  -H "Authorization: Bearer $VAST_API_KEY" \
+  --data-urlencode 'select_filters={"count_created":{"gt":100}}'
+Create a New Template
+Create a reusable template. This example shows a recommended configuration with SSH direct access.
+curl
+Python
+curl -X POST "https://console.vast.ai/api/v0/template/" \
+  -H "Authorization: Bearer $VAST_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "name": "Example Template",
+    "desc": "Template for running vLLM inference server",
+    "image": "vllm/vllm-openai",
+    "tag": "latest",
+    "env": "-e MODEL_ID=deepseek-ai/DeepSeek-R1-Distill-Llama-8B -p 8000:8000",
+    "onstart": "echo \"Starting vLLM server\"; vllm serve $MODEL_ID",
+    "runtype": "ssh",
+    "ssh_direct": true,
+    "use_ssh": true,
+    "docker_login_repo": "",
+    "docker_login_user": "",
+    "docker_login_pass": "",
+    "recommended_disk_space": 50,
+    "private": true
+  }'
+Full Template Example
+Here’s a complete template creation request with all common fields:
+{
+  "name": "Example Template",
+  "desc": "Description of what this template does",
+  "readme": "Longer documentation\nwith multiple lines",
+  "image": "library/ubuntu",
+  "tag": "22.04",
+  "repo": "library/ubuntu",
+  "href": "https://hub.docker.com/r/library/ubuntu/",
+  "env": "-e ENV1=val1 -p 8000:8000",
+  "onstart": "echo \"hello\"",
+  "args_str": "",
+  "runtype": "ssh",
+  "ssh_direct": true,
+  "use_ssh": true,
+  "jup_direct": true,
+  "jupyter_dir": null,
+  "use_jupyter_lab": false,
+  "docker_login_repo": "",
+  "docker_login_user": "",
+  "docker_login_pass": "",
+  "extra_filters": {"cuda_max_good": {"gte": 12.6}},
+  "recommended_disk_space": 8,
+  "private": true,
+  "volume_info": null
+}
+Edit a Template
+Edit an existing template using its hash_id. You only need to include the fields you want to change - unchanged fields retain their existing values.
+curl
+Python
+curl -X PUT "https://console.vast.ai/api/v0/template/" \
+  -H "Authorization: Bearer $VAST_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "hash_id": "5915f1dc1ce881defb572015eb9d8178",
+    "desc": "Updated description",
+    "recommended_disk_space": 16
+  }'
+The hash_id will change after editing since it is derived from the template content.
+Delete a Template
+Delete a template by passing its numeric id (not hash_id) in the request body.
+curl
+Python
+curl -X DELETE "https://console.vast.ai/api/v0/template/" \
+  -H "Authorization: Bearer $VAST_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{"template_id": 334548}'
+Create Instance from Template
+Launch an instance using a template. No need to specify image as the template provides it.
+curl
+Python
+curl -X PUT "https://console.vast.ai/api/v0/asks/12345678/" \
+  -H "Authorization: Bearer $VAST_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "template_hash_id": "4e17788f74f075dd9aab7d0d4427968f"
+  }'
+Create Instance with Image Override
+Use a template but specify a different Docker image.
+curl
+Python
+curl -X PUT "https://console.vast.ai/api/v0/asks/12345678/" \
+  -H "Authorization: Bearer $VAST_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "template_hash_id": "4e17788f74f075dd9aab7d0d4427968f",
+    "image": "library/ubuntu:22.04"
+  }'
+Override Environment Variables
+Override template environment variables with new values. Instance creation uses the dict format for env.
+curl
+Python
+curl -X PUT "https://console.vast.ai/api/v0/asks/12345678/" \
+  -H "Authorization: Bearer $VAST_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "template_hash_id": "4e17788f74f075dd9aab7d0d4427968f",
+    "env": {"MODEL_ID": "mistralai/Mistral-7B-Instruct-v0.2", "HF_TOKEN": "hf_xxxYourTokenHere", "-p 8000:8000": "1"}
+  }'
+Create Instance with Volume
+Attach a volume when creating an instance. You can either link an existing volume or create a new one.
+The volume_info field stored in templates is a UI hint only. To actually attach a volume, you must include volume_info in the instance creation request.
+Link an existing volume:
+curl
+Python
+curl -X PUT "https://console.vast.ai/api/v0/asks/12345678/" \
+  -H "Authorization: Bearer $VAST_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "template_hash_id": "4e17788f74f075dd9aab7d0d4427968f",
+    "volume_info": {
+      "create_new": false,
+      "volume_id": 12345,
+      "mount_path": "/workspace"
+    }
+  }'
+Create a new volume:
+curl
+Python
+curl -X PUT "https://console.vast.ai/api/v0/asks/12345678/" \
+  -H "Authorization: Bearer $VAST_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "template_hash_id": "4e17788f74f075dd9aab7d0d4427968f",
+    "volume_info": {
+      "create_new": true,
+      "volume_id": 28908979,
+      "size": 10,
+      "mount_path": "/workspace"
+    }
+  }'
+CLI equivalent:
+# Link existing volume
+vastai create instance 12345678 --template_hash abc123 --link-volume 12345 --mount-path /workspace
+
+# Create new volume
+vastai create instance 12345678 --template_hash abc123 --create-volume 28908979 --volume-size 10 --mount-path /workspace
+CLI Reference
+The Vast.ai CLI provides commands for template management:
+Command Description
+vastai create template --name <name> --image <image> [options] Create a new template
+vastai search templates [filters] Search for templates
+vastai update template <hash_id> [options] Update a template (uses hash_id)
+vastai delete template --template-id <id> Delete a template (uses numeric id)
+Create template options:
+--name NAME - Template name
+--image IMAGE - Docker image
+--image_tag TAG - Image tag
+--env ENV - Docker options (env vars and ports)
+--ssh - Launch as SSH instance
+--jupyter - Launch as Jupyter instance
+--direct - Use direct connections
+--onstart-cmd CMD - Onstart script
+--disk_space GB - Disk space in GB
+--desc DESC - Description
+--readme README - Readme content
+--public - Make template public
+The CLI update template command takes hash_id as its argument, while delete template uses the numeric id.
+Runtype and Connection Options
+The runtype field controls the launch mode of your instance:
+Runtype Description
+args Default. args_str replaces the image’s CMD and is passed to its ENTRYPOINT if one is defined
+ssh SSH access enabled. Recommended with ssh_direct: true
+jupyter Jupyter notebook/lab access
+Recommendation: Use runtype: "ssh" with ssh_direct: true and use_ssh: true for reliable SSH access to your instances.
+The args_str field is used when runtype is args. It replaces the image’s Docker CMD — if the image defines an ENTRYPOINT, args_str is passed as arguments to it. If the image has no ENTRYPOINT (only CMD), args_str replaces the command entirely.
+{
+  "runtype": "args",
+  "args_str": "--model deepseek-ai/DeepSeek-R1-Distill-Llama-8B --port 8000"
+}
+Common Pitfalls
+I'm getting an error using template_id for instance creation
+I passed template + image and got the wrong image
+My environment variable didn't apply
+Ports aren't open on my instance
+Volume didn't mount
+Template search returns no results
+Related Resources
+Templates Introduction
+Web interface guide for templates
+Create Instance API
+Full API reference for instance creation
+CLI Commands
+Command-line interface for templates
+Search Offers API
+Find available machines to rent</content>
+Instances:
+<content>Introduction
+Instance creation on Vast.ai follows a two-step process: first find an offer (an available machine), then accept that offer to create an instance. You can configure instances in two ways:
+Directly: Pass all configuration (image, environment variables, launch mode, etc.) in the instance creation request
+From a template: Reference a pre-configured template by its hash_id, optionally overriding specific values
+Both approaches use the same endpoint: PUT /api/v0/asks/{offer_id}/.
+For information about creating and managing templates, see Creating and Using Templates with API.
+Instance Creation Fields Reference
+When creating an instance, the following fields can be configured:
+Field Type Required Description
+image string Yes* Docker image path (e.g., vllm/vllm-openai). *Optional when using a template
+template_hash_id string No Template hash ID to use as base configuration
+label string No Custom name for the instance
+disk number No Local disk partition size in GB (default: 8)
+runtype string No Launch mode. SSH/Jupyter runtypes replace the image entrypoint with Vast’s entrypoint; args preserves it. See Runtype and Connection Options
+target_state string No Initial state: running (default) or stopped
+price number No Bid price in $/hour (for interruptible instances only)
+env object No Environment variables and port mappings as a JSON object (e.g., {"VAR": "val", "-p 8000:8000": "1"})
+onstart string No Shell commands to run after Vast’s entrypoint initializes. Used with SSH/Jupyter runtypes to start your application
+args_str string No Replaces the image’s Docker CMD. If the image defines an ENTRYPOINT, args_str is passed as arguments to it. Only used with runtype: "args"
+use_jupyter_lab boolean No Use JupyterLab instead of Jupyter Notebook
+jupyter_dir string No Directory to launch Jupyter from
+python_utf8 boolean No Set Python locale to C.UTF-8
+lang_utf8 boolean No Set locale to C.UTF-8
+image_login string No Docker registry credentials for private images (eg., -u username -p access_token docker.io)
+cancel_unavail boolean No Cancel if instance cannot start immediately
+vm boolean No Create a VM instance instead of a container
+volume_info object No Volume creation or linking configuration
+Step 1: Find an Offer
+Before creating an instance, search for available machines that match your requirements.
+curl
+Python
+# Search for machines with at least 1 RTX 4090, reliability > 99%
+curl -X POST "https://console.vast.ai/api/v0/bundles/" \
+  -H "Authorization: Bearer $VAST_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "gpu_name": {"in": ["RTX 4090"]},
+    "num_gpus": {"gte": 1},
+    "reliability": {"gte": 0.99},
+    "verified": {"eq": true},
+    "rentable": {"eq": true},
+    "type": "ondemand",
+    "limit": 5
+  }'
+The offer id returned from search is the value you pass as {offer_id} in the instance creation endpoint.
+Step 2: Create the Instance
+Option A: Create Instance Directly (No Template)
+Pass all configuration parameters directly in the request. At minimum, you must provide the image field.
+Simple example — create an SSH instance with Ubuntu:
+curl
+Python
+curl -X PUT "https://console.vast.ai/api/v0/asks/12345678/" \
+  -H "Authorization: Bearer $VAST_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "image": "ubuntu:22.04",
+    "disk": 16,
+    "runtype": "ssh_direct"
+  }'
+Full example — SSH instance running a vLLM inference server:
+curl
+Python
+curl -X PUT "https://console.vast.ai/api/v0/asks/12345678/" \
+  -H "Authorization: Bearer $VAST_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "image": "vllm/vllm-openai:latest",
+    "label": "vllm-inference-server",
+    "disk": 50,
+    "runtype": "ssh_direct",
+    "env": {"MODEL_ID": "deepseek-ai/DeepSeek-R1-Distill-Llama-8B", "HF_TOKEN": "hf_xxxYourTokenHere", "-p 8000:8000": "1"},
+    "onstart": "vllm serve $MODEL_ID --port 8000"
+  }'
+Option B: Create Instance from a Template
+Reference a template by its hash_id. The template provides default values for all configuration fields, so you don’t need to specify image or other parameters unless you want to override them.
+Basic template usage — all configuration comes from the template:
+curl
+Python
+curl -X PUT "https://console.vast.ai/api/v0/asks/12345678/" \
+  -H "Authorization: Bearer $VAST_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "template_hash_id": "4e17788f74f075dd9aab7d0d4427968f"
+  }'
+Template with overrides — use a template but customize specific values:
+curl
+Python
+curl -X PUT "https://console.vast.ai/api/v0/asks/12345678/" \
+  -H "Authorization: Bearer $VAST_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "template_hash_id": "4e17788f74f075dd9aab7d0d4427968f",
+    "label": "custom-inference-server",
+    "disk": 100,
+    "env": {"MODEL_ID": "mistralai/Mistral-7B-Instruct-v0.2", "HF_TOKEN": "hf_xxxYourTokenHere"}
+  }'
+Runtype and Connection Options
+The runtype field controls how you connect to your instance:
+Runtype Auto-provisioned Ports Description
+ssh_direct 22 (SSH) Direct SSH connection. Port 22 is provisioned on the instance
+ssh_proxy None SSH via Vast.ai proxy. No ports provisioned on the instance
+ssh None Alias for ssh_proxy
+jupyter_direct 8080 (Jupyter) + 22 (SSH) Recommended. Direct Jupyter and SSH access. Ports 8080 and 22 are provisioned on the instance
+jupyter_proxy None Jupyter and SSH via Vast.ai proxy. No ports provisioned on the instance
+jupyter None Alias for jupyter_proxy
+args None Container runs with the original entrypoint and args_str appended. No SSH/Jupyter
+All Jupyter runtypes implicitly include SSH access. Only the _direct runtypes provision ports on the instance itself — jupyter_direct provisions ports 8080 and 22, while ssh_direct provisions port 22. Proxy runtypes route connections through Vast.ai’s infrastructure without opening ports on the instance.
+Recommendation: Use runtype: "jupyter_direct" for the most flexibility — you get both direct Jupyter and direct SSH access with ports provisioned on the instance. Use runtype: "ssh_direct" if you only need SSH.
+Entrypoint Behavior
+How the container starts depends on the runtype:
+SSH and Jupyter runtypes: The image’s original entrypoint is replaced by Vast’s own entrypoint, which sets up SSH/Jupyter access. Use the onstart field to run your own startup commands (e.g., launching a server). Your onstart script runs after the Vast entrypoint has initialized.
+args runtype: The image’s original ENTRYPOINT is preserved. The args_str value replaces the image’s Docker CMD — if the image defines an ENTRYPOINT, args_str is passed as arguments to it. If the image has no ENTRYPOINT (only CMD), args_str replaces the command entirely. No SSH or Jupyter access is provisioned.
+If you use an SSH or Jupyter runtype without an onstart command, the container will start with only SSH/Jupyter access — your application won’t run automatically. Use onstart to start your services.
+Runtype Examples
+Jupyter Lab with SSH (recommended) — use onstart to start your application:
+{
+  "image": "ubuntu:22.04",
+  "disk": 16,
+  "runtype": "jupyter_direct",
+  "use_jupyter_lab": true,
+  "jupyter_dir": "/workspace",
+  "onstart": "echo 'Instance is ready'"
+}
+SSH with a vLLM server — the server is started via onstart:
+{
+  "image": "vllm/vllm-openai:latest",
+  "disk": 50,
+  "runtype": "ssh_direct",
+  "env": {"MODEL_ID": "deepseek-ai/DeepSeek-R1-Distill-Llama-8B", "-p 8000:8000": "1"},
+  "onstart": "vllm serve $MODEL_ID --port 8000"
+}
+Entrypoint arguments (headless) — args_str replaces the image’s CMD and is passed to its ENTRYPOINT:
+{
+  "image": "vllm/vllm-openai:latest",
+  "disk": 50,
+  "runtype": "args",
+  "args_str": "deepseek-ai/DeepSeek-R1-Distill-Llama-8B --port 8000"
+}
+Environment Variables and Ports
+When creating instances, the env field is a JSON object (dict). Environment variables are key-value pairs, and port mappings use the Docker -p syntax as keys with "1" as the value.
+{
+  "env": {
+    "HF_TOKEN": "hf_xxx123",
+    "MODEL_ID": "meta-llama/Llama-3-8B",
+    "-p 8000:8000": "1",
+    "-p 8080:8080": "1"
+  }
+}
+When using a template, the env dict from your request is merged with the template’s env:
+Existing keys from the template are retained
+New keys from the request are added
+Conflicting keys use the request value
+See Precedence Rules in the templates guide for full details.
+Instance Pricing
+On-Demand Instances
+On-demand instances use fixed pricing. Simply omit the price field:
+{
+  "image": "ubuntu:22.04",
+  "disk": 16,
+  "runtype": "ssh_direct"
+}
+Interruptible (Bid) Instances
+For lower-cost interruptible instances, set a bid price. Search with type: "bid" to find interruptible offers, then provide the price field:
+curl
+Python
+# Search for interruptible offers
+curl -X POST "https://console.vast.ai/api/v0/bundles/" \
+  -H "Authorization: Bearer $VAST_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "gpu_name": {"in": ["RTX 4090"]},
+    "num_gpus": {"gte": 1},
+    "verified": {"eq": true},
+    "rentable": {"eq": true},
+    "type": "bid"
+  }'
+
+# Create interruptible instance with bid price
+curl -X PUT "https://console.vast.ai/api/v0/asks/12345678/" \
+  -H "Authorization: Bearer $VAST_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "image": "ubuntu:22.04",
+    "disk": 16,
+    "runtype": "ssh_direct",
+    "price": 0.20
+  }'
+Attaching Volumes
+Attach persistent storage to your instance using the volume_info field. The volume must already exist — you can create volumes separately via the API or CLI before attaching them to an instance.
+You can list your existing volumes with vastai show volumes or the equivalent API call to find the volume_id to use.
+curl
+Python
+curl -X PUT "https://console.vast.ai/api/v0/asks/12345678/" \
+  -H "Authorization: Bearer $VAST_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "image": "ubuntu:22.04",
+    "disk": 16,
+    "runtype": "ssh_direct",
+    "volume_info": {
+      "volume_id": 12345,
+      "mount_path": "/workspace"
+    }
+  }'
+Using Private Docker Images
+If your Docker image is hosted in a private registry, provide credentials via the image_login field:
+curl
+Python
+curl -X PUT "https://console.vast.ai/api/v0/asks/12345678/" \
+  -H "Authorization: Bearer $VAST_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "image": "registry.example.com/my-org/my-image:latest",
+    "image_login": "-u username -p access_token docker.io",
+    "runtype": "ssh_direct"
+  }'
+When using a template with private registry credentials (docker_login_repo, docker_login_user, docker_login_pass), those credentials carry over to the instance automatically.
+End-to-End Example
+This example shows the complete workflow: searching for a machine, creating an instance, and checking its status.
+curl
+Python
+# Step 1: Search for offers
+OFFERS=$(curl -s -X POST "https://console.vast.ai/api/v0/bundles/" \
+  -H "Authorization: Bearer $VAST_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "gpu_name": {"in": ["RTX 4090"]},
+    "num_gpus": {"gte": 1},
+    "gpu_ram": {"gte": 24000},
+    "reliability": {"gte": 0.99},
+    "verified": {"eq": true},
+    "rentable": {"eq": true},
+    "type": "ondemand",
+    "limit": 3
+  }')
+
+echo "Available offers:"
+echo "$OFFERS" | jq '.offers[] | {id, gpu_name, num_gpus, dph_total}'
+
+# Step 2: Create instance using the first offer
+OFFER_ID=$(echo "$OFFERS" | jq '.offers[0].id')
+
+RESULT=$(curl -s -X PUT "https://console.vast.ai/api/v0/asks/$OFFER_ID/" \
+  -H "Authorization: Bearer $VAST_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "image": "vllm/vllm-openai:latest",
+    "label": "my-vllm-server",
+    "disk": 50,
+    "runtype": "ssh_direct",
+    "env": {"MODEL_ID": "deepseek-ai/DeepSeek-R1-Distill-Llama-8B", "-p 8000:8000": "1"},
+    "onstart": "vllm serve $MODEL_ID --port 8000"
+  }')
+
+INSTANCE_ID=$(echo "$RESULT" | jq '.new_contract')
+echo "Created instance: $INSTANCE_ID"
+
+# Step 3: Check instance status
+curl -s "https://console.vast.ai/api/v0/instances/$INSTANCE_ID/" \
+  -H "Authorization: Bearer $VAST_API_KEY" | jq '{id: .instances.id, status: .instances.actual_status, label: .instances.label}'
+CLI Reference
+The Vast.ai CLI provides equivalent commands for instance creation:
+Command Description
+vastai search offers '<filters>' Search for available machines
+vastai create instance <offer_id> <image> [options] Create an instance directly
+vastai create instance <offer_id> --template_hash <hash> Create an instance from a template
+Common create instance options:
+--image IMAGE - Docker image
+--template_hash HASH - Template hash ID
+--disk GB - Disk space in GB
+--ssh - Launch as SSH instance
+--direct - Use direct connections
+--jupyter - Launch as Jupyter instance
+--jupyter-lab - Use JupyterLab
+--env ENV - Docker options (env vars and ports)
+--onstart-cmd CMD - Onstart script
+--label LABEL - Instance name
+--price PRICE - Bid price for interruptible instances
+--link-volume ID - Attach an existing volume
+--mount-path PATH - Volume mount path
+Example CLI commands:
+# Direct instance creation
+vastai create instance 12345678 vllm/vllm-openai:latest \
+  --disk 50 --ssh --direct \
+  --env "-e MODEL_ID=deepseek-ai/DeepSeek-R1-Distill-Llama-8B -p 8000:8000" \
+  --onstart-cmd "vllm serve \$MODEL_ID --port 8000"
+
+# Instance from template
+vastai create instance 12345678 --template_hash 4e17788f74f075dd9aab7d0d4427968f
+
+# Instance from template with overrides
+vastai create instance 12345678 --template_hash 4e17788f74f075dd9aab7d0d4427968f \
+  --disk 100 \
+  --env "-e HF_TOKEN=hf_xxxYourTokenHere"
+Common Pitfalls
+My instance was created but I can't connect via SSH
+My environment variables aren't taking effect
+Offer not found or no longer available
+My bid instance keeps getting interrupted
+Volume didn't mount to my instance
+Related Resources
+Templates Guide
+Create and manage templates for instance configuration
+Create Instance API
+Full API reference for the instance creation endpoint
+Search Offers API
+Find available machines to rent
+Instance Types
+On-demand vs interruptible vs reserved instances</content>
+Rate Limits and Errors:
+<content>This page describes how Vast.ai public API errors and rate limits work, along with practical retry guidance.
+Error Responses
+Error responses vary slightly by endpoint. The most common error response shape is:
+{
+  "success": false,
+  "error": "invalid_args",
+  "msg": "Human-readable description of the problem."
+}
+Some endpoints omit the boolean success. Some omit error and return only msg or message.
+Rate Limits
+How rate limits are applied
+Vast.ai applies rate limits per endpoint and per identity. This is enforced as a minimum interval between requests for a given endpoint and identity.
+The identity is determined by: bearer token + session user + api_key query param + client IP.
+Some endpoints also use method-specific limits (GET vs POST) and/or max-calls-per-period limits for short bursts.
+Rate limit response behavior
+When you hit a rate limit, you will receive HTTP 429. The response body is often plain text (in certain cases JSON with success/error/msg like above) with one of the following messages:
+API requests too frequent
+or
+API requests too frequent: endpoint threshold=...
+The API does not currently set standard rate-limit headers (for example Retry-After), so clients should apply their own backoff strategy.
+How to reduce rate limit errors
+Batch requests where supported, rather than calling many single-item endpoints.
+Reduce polling: use longer polling intervals, or cache results client-side.
+Spread traffic over time: avoid bursts; use a queue or scheduler.
+If you need higher limits for legitimate production usage, contact support with the endpoint(s), your expected call rate, and your account details.</content>
+Network Volumes:
+POST
+add network-disk:
+<content>POST
+/
+api
+/
+v0
+/
+network_disk
+Try it
+Authorizations
+Authorization
+stringheaderrequired
+API key must be provided in the Authorization header
+Body
+application/json
+mount_point
+stringrequired
+Path to mount point of networked storage on machine or machines
+machine_id
+integer
+ID of the machine to add network disk to
+machine_ids
+integer[]
+IDs of machines to add network disk to
+disk_id
+integer
+ID of network disk, if adding machines to existing disk
+Response
+200
+application/json
+Successful response
+success
+boolean
+disk_id
+integer
+ID of disk created or added to machines</content>
+PUT
+create network-volume:
+<content>PUT
+/
+api
+/
+v0
+/
+network_volume
+Try it
+Authorizations
+Authorization
+stringheaderrequired
+API key must be provided in the Authorization header
+Body
+application/json
+id
+integerrequired
+ID of network volume ask being accepted
+size
+integerrequired
+size of network volume in GB being created
+name
+string
+optional name for network volume being created
+Response
+200
+application/json
+Successful response
+success
+boolean
+volume_name
+string
+name of network volume created
+volume_size
+integer
+size of network volume created</content>
+POST
+list network-volume:
+<content>POST
+/
+api
+/
+v0
+/
+network_volume
+Try it
+Authorizations
+Authorization
+stringheaderrequired
+API key must be provided in the Authorization header
+Body
+application/json
+disk_id
+integerrequired
+ID of network disk for which offer is being created
+price_disk
+number<float>
+Price per GB of network volume storage
+size
+integer
+Size in GB of the amount of space available to be rented
+credit_discount_max
+number<float>
+Maximum discount rate allowed for prepaid credits
+end_date
+number<float>
+Unix timestamp for when the listing expires
+Response
+200
+application/json
+Successful response
+success
+boolean
+msg
+string
+status message</content>
+POST
+search network volumes:
+<content>POST
+/
+api
+/
+v0
+/
+network_volumes
+/
+search
+Try it
+Authorizations
+Authorization
+stringheaderrequired
+API key must be provided in the Authorization header
+Body
+application/json
+q
+object
+Show child attributes
+Response
+200
+application/json
+Successful search response
+success
+boolean
+Example:
+true
+offers
+object[]
+Show child attributes</content>
+POST
+unlist network-volume:
+<content>POST
+/
+api
+/
+v0
+/
+network_volumes
+/
+unlist
+Try it
+Authorizations
+Authorization
+stringheaderrequired
+API key must be provided in the Authorization header
+Body
+application/json
+id
+integerrequired
+ID of network volume ask being unlisted
+Response
+200
+application/json
+Successful response
+success
+boolean
+id
+integer
+id of unlisted network volume ask
+msg
+string
+status message</content>
+Instances:
+POST
+attach ssh-key:
+<content>POST
+/
+api
+/
+v0
+/
+instances
+/
+{id}
+/
+ssh
+Try it
+Authorizations
+Authorization
+stringheaderrequired
+API key must be provided in the Authorization header
+Path Parameters
+id
+integerrequired
+ID of the instance to attach the SSH key to
+Body
+application/json
+ssh_key
+string
+The SSH key to attach to the instance
+Minimum string length: 1
+Example:
+"ssh-rsa AAAAB3NzaC1yc2EAAA..."
+Response
+200
+application/json
+SSH key attached successfully
+success
+boolean
+Example:
+true
+msg
+string
+Example:
+"SSH key attached successfully"</content>
+PUT
+copy:
+<content>PUT
+/
+api
+/
+v0
+/
+commands
+/
+copy_direct
+Try it
+Authorizations
+Authorization
+stringheaderrequired
+API key must be provided in the Authorization header
+Body
+application/json
+src_path
+stringrequired
+Path of the source data.
+dst_path
+stringrequired
+Path of the destination data.
+src_id
+string
+ID of the source instance.
+dst_id
+string
+ID of the destination instance.
+Response
+200
+application/json
+Remote copy initiated successfully.
+success
+boolean
+Example:
+true
+msg
+string
+Example:
+"Remote to Remote copy initiated - check instance status bar for progress updates (~30 seconds delayed)."</content>
+DEL
+cancel copy:
+<content>DELETE
+/
+api
+/
+v0
+/
+commands
+/
+copy_direct
+Try it
+Authorizations
+Authorization
+stringheaderrequired
+API key must be provided in the Authorization header
+Body
+application/json
+dst_id
+stringrequired
+ID of the copy instance target to cancel.
+Response
+200
+application/json
+Remote copy canceled successfully.
+success
+boolean
+Example:
+true</content>
+POST
+cloud copy:
+<content>POST
+/
+api
+/
+v0
+/
+commands
+/
+rclone
+Try it
+Authorizations
+Authorization
+stringheaderrequired
+API key must be provided in the Authorization header
+Body
+application/json
+instance_id
+string
+ID of the instance.
+src
+string
+Source path for the copy operation.
+dst
+string
+Destination path for the copy operation.
+selected
+string
+ID of the cloud connection.
+transfer
+string
+Type of transfer (e.g., "Instance To Cloud" or "Cloud To Instance").
+flags
+string[]
+Additional flags for the operation.
+api_key
+string
+API key for authentication.
+Response
+200
+application/json
+Cloud copy operation initiated successfully.
+success
+boolean
+msg
+string
+result_url
+string</content>
+DEL
+cancel sync:
+<content>DELETE
+/
+api
+/
+v0
+/
+commands
+/
+rclone
+Try it
+Authorizations
+Authorization
+stringheaderrequired
+API key must be provided in the Authorization header
+Body
+application/json
+dst_id
+integerrequired
+The destination instance ID of the sync operation to cancel.
+Response
+200
+application/json
+Sync operation canceled successfully.
+success
+boolean
+Example:
+true
+msg
+string
+Example:
+"Remote copy canceled - check instance status bar for progress updates (~30 seconds delayed)."</content>
+PUT
+change bid:
+<content>PUT
+/
+api
+/
+v0
+/
+instances
+/
+bid_price
+/
+{id}
+Try it
+Authorizations
+Authorization
+stringheaderrequired
+API key must be provided in the Authorization header
+Path Parameters
+id
+integerrequired
+Instance ID
+Body
+application/json
+client_id
+stringrequired
+Client identifier (usually "me")
+Example:
+"me"
+price
+numberrequired
+Bid price in $/hour
+Required range: 0.001 <= x <= 32
+Example:
+0.17
+Response
+200
+application/json
+Success response
+success
+boolean
+Example:
+true</content>
+PUT
+create instance:
+<content>PUT
+/
+api
+/
+v0
+/
+asks
+/
+{id}
+Try it
+Authorizations
+Authorization
+stringheaderrequired
+API key must be provided in the Authorization header
+Path Parameters
+id
+integerrequired
+ID of the offer to accept (ask_id)
+Body
+application/json
+image
+stringdefault:vastai/base-image:@vastai-automatic-tagrequired
+Docker image to use for the instance.
+template_hash_id
+string
+Content-based hash ID of a template to use as base configuration. Template values are merged with or overridden by request parameters (see precedence rules in endpoint description). When using a template, the image field is optional as the template provides it.
+Example: 4e17788f74f075dd9aab7d0d4427968f
+label
+string
+Custom name for the instance
+disk
+number<float>
+Size of local disk partition (in GB)
+runtype
+enum<string>
+Launch mode for the instance. If omitted, defaults to 'ssh' unless args/args_str is provided.
+Available options: ssh, jupyter, args, ssh_proxy, ssh_direct, jupyter_proxy, jupyter_direct 
+target_state
+enum<string>
+Desired initial state of the instance
+Available options: running, stopped 
+price
+number
+Bid price per machine (in $/hour). Only for interruptible instances
+Required range: 0.001 <= x <= 128
+env
+string
+Environment variables and port mappings in Docker flag format. When using a template, request env is merged with template env - existing keys are retained, new keys are appended, conflicting keys use the request value.
+Example: "-e HF_TOKEN=hf_xxx123456789 -e MODEL_ID=TheBloke/Llama-2-7B-Chat-GPTQ -p 8000:8000"
+cancel_unavail
+boolean
+Whether to cancel if instance cannot start immediately. Defaults to false for interruptibles. Defaults to true for on-demand with target_state='running'
+vm
+boolean
+Whether this is a VM instance
+onstart
+string
+Commands to run when instance starts
+Example : env | grep _ >> /etc/environment; echo 'starting up'
+args
+string[]
+Arguments array to passed to the image entrypoint
+Example : ["bash", "-c", "env | grep _ >> /etc/environment; echo 'starting up'"]
+args_str
+string
+Arguments string to pass to the entrypoint (alternative to args)
+Example : args_str: bash -c "env | grep _ >> /etc/environment; echo 'starting up'"
+use_jupyter_lab
+boolean
+Launch instance with jupyter lab instead of notebook
+jupyter_dir
+string
+Directory to launch Jupyter from
+Example : /home/notebooks
+python_utf8
+boolean
+Set python's locale to C.UTF-8
+lang_utf8
+boolean
+Set locale to C.UTF-8
+force
+boolean
+Skip sanity checks when creating from an existing instance
+user
+string
+User to use with docker create (breaks some images, use with caution)
+image_login
+string
+Docker registry credentials if needed
+volume_info
+object
+Volume creation/linking information
+Show child attributes
+Response
+200
+application/json
+Instance created successfully
+success
+boolean
+If the instance was created successfully
+Example:
+true
+new_contract
+integer
+ID of the newly created instance contract
+Example:
+1234568</content>
+GET
+show instance:
+<content>GET
+/
+api
+/
+v0
+/
+instances
+/
+{id}
+Try it
+Authorizations
+Authorization
+stringheaderrequired
+API key must be provided in the Authorization header
+Path Parameters
+id
+integerrequired
+The instance (contract) ID to retrieve.
+Response
+200
+application/json
+Success response with instance details.
+instances
+object
+Detailed information about an instance.
+Show child attributes</content>
+PUT
+manage instance:
+<content>PUT
+/
+api
+/
+v0
+/
+instances
+/
+{id}
+Try it
+Authorizations
+Authorization
+stringheaderrequired
+API key must be provided in the Authorization header
+Path Parameters
+id
+integerrequired
+ID of the instance to modify
+Body
+application/json
+At least one of these parameters should be provided
+state
+enum<string>
+Change instance state (optional)
+Available options: stopped, running 
+Example:
+"stopped"
+label
+string
+Text label to assign to the instance (optional)
+Maximum string length: 1024
+Example:
+"My ML Training Job"
+Response
+200
+application/json
+Operation completed successfully
+success
+boolean
+Example:
+true</content>
+DEL
+destroy instance:
+<content>DELETE
+/
+api
+/
+v0
+/
+instances
+/
+{id}
+Try it
+Authorizations
+Authorization
+stringheaderrequired
+API key must be provided in the Authorization header
+Path Parameters
+id
+integerrequired
+ID of the instance to destroy
+Response
+200
+application/json
+Instance destroyed successfully
+success
+boolean
+Whether the destruction was successful
+Example:
+true
+msg
+string
+Optional status message
+Example:
+"Instance destroyed successfully"</content>
+DEL
+detach ssh-key:
+<content>DELETE
+/
+api
+/
+v0
+/
+instances
+/
+{id}
+/
+ssh
+/
+{ssh_key_id}
+Try it
+Authorizations
+Authorization
+stringheaderrequired
+API key must be provided in the Authorization header
+Path Parameters
+id
+integerrequired
+ID of the instance to detach the SSH key from
+Example:
+99999
+ssh_key_id
+integerrequired
+Numeric ID of the SSH key to detach. Obtainable via show ssh-keys command
+Example:
+12345
+Response
+200
+application/json
+SSH key successfully detached
+success
+boolean
+Example:
+true
+msg
+string
+Example:
+"SSH key removed from instance."</content>
+PUT
+execute:
+<content>PUT
+/
+api
+/
+v0
+/
+instances
+/
+command
+/
+{id}
+Try it
+Authorizations
+Authorization
+stringheaderrequired
+API key must be provided in the Authorization header
+Path Parameters
+id
+integerrequired
+ID of the instance to execute command on
+Example:
+12345
+Body
+application/json
+command
+stringrequired
+Command to execute on the instance
+Maximum string length: 512
+Example:
+"ls -l"
+Response
+200
+application/json
+Command queued successfully
+success
+boolean
+Example:
+true
+writeable_path
+string
+Container writeable path
+Example:
+"/workspace"
+result_url
+string
+URL to fetch command execution results
+Example:
+"https://s3.amazonaws.com/vast.ai/instance_logs/abc123.log"
+msg
+string
+Example:
+"Command is executing, wait a few seconds and then view the result_url"</content>
+PUT
+show logs:
+<content>PUT
+/
+api
+/
+v0
+/
+instances
+/
+request_logs
+/
+{id}
+Try it
+Authorizations
+Authorization
+stringheaderrequired
+API key must be provided in the Authorization header
+Path Parameters
+id
+integerrequired
+ID of the instance to get logs from
+Body
+application/json
+tail
+string
+Number of lines to show from end of logs
+Example:
+"1000"
+filter
+string
+Grep filter to apply to log entries
+daemon_logs
+enum<string>
+If "true", fetch daemon system logs instead of container logs
+Available options: true 
+Response
+200
+application/json
+Success response with S3 URL for log retrieval
+success
+boolean
+Example:
+true
+result_url
+string
+S3 URL where logs can be downloaded
+Example:
+"https://s3.amazonaws.com/vast.ai/instance_logs/{hash}.log"
+msg
+string
+Status message</content>
+PUT
+prepay instance:
+<content>PUT
+/
+api
+/
+v0
+/
+instances
+/
+prepay
+/
+{id}
+Try it
+Authorizations
+Authorization
+stringheaderrequired
+API key must be provided in the Authorization header
+Path Parameters
+id
+integerrequired
+ID of the instance to prepay for
+Body
+application/json
+amount
+number<float>required
+Amount of credits to prepay
+Example:
+500
+Response
+200
+application/json
+Successfully applied prepayment
+success
+boolean
+Example:
+true
+timescale
+number<float>
+Number of months the prepayment will cover
+Example:
+3.5
+discount_rate
+number<float>
+Applied discount rate (0.0-0.4)
+Example:
+0.3</content>
+PUT
+reboot instance:
+<content>PUT
+/
+api
+/
+v0
+/
+instances
+/
+reboot
+/
+{id}
+Try it
+Authorizations
+Authorization
+stringheaderrequired
+API key must be provided in the Authorization header
+Path Parameters
+id
+integerrequired
+ID of the instance to reboot
+Response
+200
+application/json
+Instance reboot initiated successfully
+success
+boolean
+Example:
+true</content>
+PUT
+recycle instance:
+<content>PUT
+/
+api
+/
+v0
+/
+instances
+/
+recycle
+/
+{id}
+Try it
+Authorizations
+Authorization
+stringheaderrequired
+API key must be provided in the Authorization header
+Path Parameters
+id
+integerrequired
+ID of the instance to recycle
+Response
+200
+application/json
+Instance recycle initiated successfully
+success
+boolean
+Example:
+true</content>
+GET
+show ssh-keys:
+<content>GET
+/
+api
+/
+v0
+/
+instances
+/
+{instance_id}
+/
+ssh
+Try it
+Authorizations
+Authorization
+stringheaderrequired
+API key must be provided in the Authorization header
+Path Parameters
+instance_id
+integerrequired
+The ID of the instance to retrieve SSH keys for.
+Response
+200
+application/json
+Success response with SSH keys
+success
+boolean
+Example:
+true
+ssh_keys
+string
+JSON string containing array of SSH key objects
+Example:
+"[{\"id\": 1, \"name\": \"my-key\", \"public_key\": \"ssh-rsa AAAA...\"}]"</content>
+GET
+show instances
+deprecated:
+<content>GET
+/
+api
+/
+v0
+/
+instances
+Try it
+Authorizations
+Authorization
+stringheaderrequired
+API key must be provided in the Authorization header
+Response
+200
+application/json
+Success response with user instances
+instances_found
+integer
+Number of instances found for the user.
+Example:
+11
+instances
+object[]
+List of instance objects.
+Show child attributes</content>
+GET
+show instances (v1):
+<content>GET
+/
+api
+/
+v1
+/
+instances
+Try it
+Authorizations
+Authorization
+stringheaderrequired
+API key must be provided in the Authorization header
+Query Parameters
+limit
+integerdefault:25
+Instances per page. Default 25, max 25. Values ≤ 0 are treated as 5.
+Required range: x <= 25
+after_token
+string
+Keyset pagination cursor from the previous response's next_token. An invalid token returns a 400 error.
+order_by
+string
+JSON array of sort directives, e.g. [{"col":"id","dir":"asc"}]. Valid dir values: asc, desc (anything else treated as asc). id is always appended as a tiebreaker. Invalid column returns 400.
+select_cols
+stringdefault:["*"]
+JSON array of column names to return, e.g. ["id","label","actual_status"]. Use ["*"] for all columns (default). Unknown column names are returned as null.
+select_filters
+stringdefault:{}
+JSON object of column filters. Supported operators: eq, neq, gt, gte, lt, lte, in, notin.
+Filterable columns: actual_status, gpu_name, verification, id, label, and other columns stored directly on the contract record. Computed fields (e.g. dph_total, num_gpus) are not filterable and return 400.
+Response
+200
+application/json
+Paginated list of instances
+success
+boolean
+Example:
+true
+instances_found
+integer
+Number of instances returned in this page.
+Example:
+5
+total_instances
+integer
+Total number of instances matching the filters.
+Example:
+42
+label_counts
+object
+Count of instances grouped by label. Unlabelled instances are keyed by empty string.
+Example:
+{ "ML Training Job": 3, "": 2 }
+next_token
+string | null
+Pagination cursor for the next page. null when no more pages.
+Example:
+"eyJ2YWx1ZXMiOiB7ImlkIjogMTIzfX0="
+instances
+object[]
+List of instance objects.
+Show child attributes</content>
+Machines:
+PUT
+cancel maint:
+<content>PUT
+/
+api
+/
+v0
+/
+machines
+/
+{machine_id}
+/
+cancel_maint
+Try it
+Authorizations
+Authorization
+stringheaderrequired
+API key must be provided in the Authorization header
+Path Parameters
+machine_id
+integerrequired
+ID of the machine to cancel maintenance for.
+Response
+200
+application/json
+Maintenance window successfully canceled.
+success
+boolean
+Example:
+true
+ctime
+number<float>
+Current time in seconds since the epoch.
+machine_id
+integer
+ID of the machine.
+msg
+string
+Example:
+"deleted 1 scheduled maintenance window(s) on machine 1234"</content>
+PUT
+cleanup machine:
+<content>PUT
+/
+api
+/
+v0
+/
+machines
+/
+{machine_id}
+/
+cleanup
+Try it
+Authorizations
+Authorization
+stringheaderrequired
+API key must be provided in the Authorization header
+Path Parameters
+machine_id
+integerrequired
+The ID of the machine to clean up.
+Body
+application/json
+An empty JSON object is expected.
+Response
+200
+application/json
+Success response
+success
+boolean
+Example:
+true
+ctime
+number<float>
+Example:
+1633036800
+machine_id
+integer
+Example:
+123
+user_id
+integer
+Example:
+456
+num_deleted
+integer
+Example:
+5
+msg
+string
+Example:
+"deleted 5 expired contracts on machine 123"</content>
+PUT
+list machine:
+<content>PUT
+/
+api
+/
+v0
+/
+machines
+/
+create_asks
+Try it
+Authorizations
+Authorization
+stringheaderrequired
+API key must be provided in the Authorization header
+Body
+application/json
+machine
+integerrequired
+ID of the machine to list
+price_gpu
+number<float>
+Price per GPU per hour
+price_disk
+number<float>
+Price per GB of disk storage
+price_inetu
+number<float>
+Price per GB of upload bandwidth
+price_inetd
+number<float>
+Price per GB of download bandwidth
+price_min_bid
+number<float>
+Minimum bid price allowed
+min_chunk
+integerdefault:1
+Minimum number of GPUs that must be rented together
+end_date
+number<float>
+Unix timestamp for when the listing expires
+credit_discount_max
+number<float>
+Maximum discount rate allowed for prepaid credits
+Response
+200
+application/json
+Successful response
+success
+boolean
+extended
+integer
+Number of client contracts extended to new end date
+msg
+string
+Status message if success is false</content>
+DEL
+remove defjob:
+<content>DELETE
+/
+api
+/
+v0
+/
+machines
+/
+{machine_id}
+/
+defjob
+Try it
+Authorizations
+Authorization
+stringheaderrequired
+API key must be provided in the Authorization header
+Path Parameters
+machine_id
+integerrequired
+ID of the machine to remove the default job from.
+Example:
+12345
+Response
+200
+application/json
+Success response
+success
+boolean
+Example:
+true
+machine_id
+integer
+Example:
+12345
+user_id
+integer
+Example:
+67890</content>
+GET
+show reports:
+<content>GET
+/
+api
+/
+v0
+/
+machines
+/
+{machine_id}
+/
+reports
+Try it
+Authorizations
+Authorization
+stringheaderrequired
+API key must be provided in the Authorization header
+Path Parameters
+machine_id
+integerrequired
+The unique identifier of the machine.
+Response
+200
+application/json
+An array of reports for the specified machine.
+problem
+string
+The type of problem reported.
+message
+string
+Detailed message describing the problem.
+created_at
+string<date-time>
+Timestamp when the report was created.</content>
+PUT
+schedule maint:
+<content>PUT
+/
+api
+/
+v0
+/
+machines
+/
+{machine_id}
+/
+dnotify
+Try it
+Authorizations
+Authorization
+stringheaderrequired
+API key must be provided in the Authorization header
+Path Parameters
+machine_id
+integerrequired
+ID of the machine to schedule maintenance for.
+Example:
+12345
+Body
+application/json
+sdate
+string<date-time>required
+Start date and time of the maintenance window.
+Example:
+"2023-10-30T14:00:00Z"
+duration
+integerrequired
+Duration of the maintenance window in hours.
+Example:
+2
+maintenance_reason
+string
+Reason for the maintenance.
+Example:
+"Routine hardware check"
+maintenance_category
+enum<string>
+Category of the maintenance.
+Available options: power, internet, disk, gpu, software, other 
+Example:
+"software"
+Response
+200
+application/json
+Success response
+success
+boolean
+Example:
+true
+you_sent
+string
+Example:
+"2 notifications sent"</content>
+PUT
+set defjob:
+<content>PUT
+/
+api
+/
+v0
+/
+machines
+/
+create_bids
+Try it
+Authorizations
+Authorization
+stringheaderrequired
+API key must be provided in the Authorization header
+Body
+application/json
+machine
+integerrequired
+ID of the machine to create jobs for.
+Example:
+12345
+price_gpu
+number<float>required
+Price per GPU per day.
+Example:
+0.5
+price_inetu
+number<float>required
+Price for internet upload.
+Example:
+0.1
+price_inetd
+number<float>required
+Price for internet download.
+Example:
+0.1
+image
+stringrequired
+Docker image to use for the job.
+Example:
+"vastai/tensorflow"
+args
+string[]
+Arguments for the Docker image.
+Example:
+["--arg1", "--arg2"]
+Response
+200
+application/json
+Success response
+success
+boolean
+Example:
+true
+machine_id
+integer
+Example:
+12345
+user_id
+integer
+Example:
+67890
+you_sent
+object
+The original request JSON.</content>
+PUT
+set min-bid:
+<content>PUT
+/
+api
+/
+v0
+/
+machines
+/
+{machine_id}
+/
+minbid
+Try it
+Authorizations
+Authorization
+stringheaderrequired
+API key must be provided in the Authorization header
+Path Parameters
+machine_id
+integerrequired
+The ID of the machine.
+Body
+application/json
+price
+number<float>required
+Minimum bid price for the machine.
+Example:
+0.5
+Response
+200
+application/json
+Success response
+success
+boolean
+Example:
+true
+you_sent
+object
+The original request JSON.</content>
+GET
+show machines:
+<content>GET
+/
+api
+/
+v0
+/
+machines
+Try it
+Authorizations
+Authorization
+stringheaderrequired
+API key must be provided in the Authorization header
+Query Parameters
+user_id
+stringrequired
+The ID of the user whose machines are being requested.
+Response
+200
+application/json
+A list of machines
+machines
+object[]
+Show child attributes</content>
+DEL
+unlist machine:
+<content>DELETE
+/
+api
+/
+v0
+/
+machines
+/
+{machine_id}
+/
+asks
+Try it
+Authorizations
+Authorization
+stringheaderrequired
+API key must be provided in the Authorization header
+Path Parameters
+machine_id
+integerrequired
+The ID of the machine to unlist.
+Response
+200
+application/json
+Success response
+success
+boolean
+Example:
+true
+machine_id
+integer
+Example:
+123
+user_id
+integer
+Example:
+456</content>
+Accounts:
+GET
+show api keys:
+<content>GET
+/
+api
+/
+v0
+/
+auth
+/
+apikeys
+Try it
+Authorizations
+Authorization
+stringheaderrequired
+API key must be provided in the Authorization header
+Response
+200
+application/json
+API keys successfully retrieved
+apikeys
+object[]
+Show child attributes</content>
+POST
+create api-key:
+<content>POST
+/
+api
+/
+v0
+/
+auth
+/
+apikeys
+Try it
+Authorizations
+Authorization
+stringheaderrequired
+API key must be provided in the Authorization header
+Body
+application/json
+name
+stringrequired
+Name for the API key
+Example:
+"read-only-key"
+permissions
+object
+JSON object containing permission definitions
+Example:
+{ "read": true, "write": false }
+key_params
+object
+Optional wildcard parameters for advanced keys
+Example:
+{ "ip_whitelist": ["1.2.3.4"] }
+Response
+200
+application/json
+API key created successfully
+id
+integer
+The ID of the created API key
+Example:
+12345
+key
+string
+The newly generated API key
+Example:
+"vast-123456789abcdef"
+permissions
+boolean
+object
+boolean
+False when permissions are disabled
+Example:
+false</content>
+GET
+show env vars:
+<content>GET
+/
+api
+/
+v0
+/
+secrets
+Try it
+Authorizations
+Authorization
+stringheaderrequired
+API key must be provided in the Authorization header
+Response
+200
+application/json
+Success response with user secrets
+success
+boolean
+Example:
+true
+secrets
+object
+Show child attributes</content>
+PUT
+update env var:
+<content>PUT
+/
+api
+/
+v0
+/
+secrets
+Try it
+Authorizations
+Authorization
+stringheaderrequired
+API key must be provided in the Authorization header
+Body
+application/json
+key
+stringrequired
+The key of the environment variable to update (will be converted to uppercase)
+Pattern: ^[a-zA-Z_]\w*$
+Example:
+"MY_API_KEY"
+value
+stringrequired
+The new value for the environment variable
+Example:
+"xyz123"
+Response
+200
+application/json
+Environment variable updated successfully
+success
+boolean
+Example:
+true
+msg
+string
+Example:
+"Environment variable updated successfully"</content>
+POST
+create env-var:
+<content>POST
+/
+api
+/
+v0
+/
+secrets
+Try it
+Authorizations
+Authorization
+stringheaderrequired
+API key must be provided in the Authorization header
+Body
+application/json
+key
+stringrequired
+Environment variable key name (will be converted to uppercase)
+Example:
+"API_TOKEN"
+value
+stringrequired
+Secret value to be encrypted and stored
+Pattern: ^[a-zA-Z0-9_\-\.]+$
+Example:
+"abc123xyz"
+Response
+200
+application/json
+Environment variable created successfully
+success
+boolean
+Example:
+true
+msg
+string
+Example:
+"Environment variable added successfully"</content>
+DEL
+delete env var:
+<content>DELETE
+/
+api
+/
+v0
+/
+secrets
+Try it
+Authorizations
+Authorization
+stringheaderrequired
+API key must be provided in the Authorization header
+Body
+application/json
+key
+stringrequired
+Name of the environment variable to delete
+Example:
+"MY_API_KEY"
+Response
+200
+application/json
+Environment variable deleted successfully
+success
+boolean
+Example:
+true
+msg
+string
+Example:
+"Operation completed successfully"</content>
+GET
+show ssh keys:
+<content>GET
+/
+api
+/
+v0
+/
+ssh
+Try it
+Authorizations
+Authorization
+stringheaderrequired
+API key must be provided in the Authorization header
+Headers
+Authorization
+stringrequired
+Bearer token for user authentication.
+Response
+200
+application/json
+A list of SSH keys.
+id
+integer
+The unique identifier of the SSH key.
+user_id
+integer
+The ID of the user to whom the SSH key belongs.
+key
+string
+The SSH public key.
+created_at
+string<date-time>
+The timestamp when the SSH key was created.
+deleted_at
+string<date-time> | null
+The timestamp when the SSH key was deleted, if applicable.</content>
+POST
+create ssh-key:
+<content>POST
+/
+api
+/
+v0
+/
+ssh
+Try it
+Authorizations
+Authorization
+stringheaderrequired
+API key must be provided in the Authorization header
+Body
+application/json
+ssh_key
+stringrequired
+The public SSH key to add (from .pub file)
+Example:
+"ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQC..."
+Response
+200
+application/json
+SSH key created successfully
+success
+boolean
+Example:
+true
+key
+object
+Show child attributes</content>
+PUT
+set user:
+<content>PUT
+/
+api
+/
+v0
+/
+users
+Try it
+Authorizations
+Authorization
+stringheaderrequired
+API key must be provided in the Authorization header
+Body
+application/json
+normalized_email
+string
+Normalized email address.
+Example:
+"user@example.com"
+username
+string
+Username of the user.
+Example:
+"johndoe"
+fullname
+string
+Full name of the user.
+Example:
+"John Doe"
+Response
+200
+application/json
+Success response
+success
+boolean
+Example:
+true
+msg
+string
+Example:
+"Operation completed successfully"</content>
+POST
+create subaccount:
+<content>POST
+/
+api
+/
+v0
+/
+users
+Try it
+Authorizations
+Authorization
+stringheaderrequired
+API key must be provided in the Authorization header
+Body
+application/json
+email
+stringrequired
+User's email address
+Maximum string length: 64
+Pattern: ^(?!.*@vast)[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$
+Example:
+"user@example.com"
+username
+stringrequired
+Desired username
+Maximum string length: 64
+Example:
+"testuser123"
+password
+stringrequired
+Account password
+Maximum string length: 256
+Example:
+"securepass123"
+host_only
+boolean
+If true, account is restricted to host functionality only
+Example:
+true
+parent_id
+string
+Parent account ID for subaccounts. Use "me" for current user.
+Example:
+"me"
+ssh_key
+string
+Optional SSH public key
+Maximum string length: 4096
+captcha
+string
+Captcha token (required for non-subaccounts)
+Maximum string length: 8192
+Response
+200
+application/json
+Account created successfully
+id
+integer
+User ID
+username
+string
+email
+string
+key_id
+integer
+API key for the new account</content>
+DEL
+delete api key:
+<content>DELETE
+/
+api
+/
+v0
+/
+auth
+/
+apikeys
+/
+{id}
+Try it
+Authorizations
+Authorization
+stringheaderrequired
+API key must be provided in the Authorization header
+Path Parameters
+id
+integerrequired
+ID of the API key to delete
+Required range: x >= 1
+Response
+200
+application/json
+API key successfully deleted
+The response is of type string.
+Example:
+"Successfully Deleted API Key"</content>
+PUT
+update ssh key:
+<content>PUT
+/
+api
+/
+v0
+/
+ssh
+/
+{id}
+Try it
+Authorizations
+Authorization
+stringheaderrequired
+API key must be provided in the Authorization header
+Path Parameters
+id
+integerrequired
+ID of the SSH key to update
+Body
+application/json
+ssh_key
+stringrequired
+The new value for the SSH key
+Example:
+"ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQC3..."
+Response
+200
+application/json
+SSH key updated successfully
+success
+boolean
+Example:
+true
+key
+object
+The updated SSH key data</content>
+DEL
+delete ssh key:
+<content>DELETE
+/
+api
+/
+v0
+/
+ssh
+/
+{id}
+Try it
+Authorizations
+Authorization
+stringheaderrequired
+API key must be provided in the Authorization header
+Path Parameters
+id
+integer<int64>required
+ID of the SSH key to delete
+Response
+200
+application/json
+SSH key successfully deleted
+success
+booleanrequired
+Example:
+true</content>
+GET
+show connections:
+<content>GET
+/
+api
+/
+v0
+/
+users
+/
+cloud_integrations
+Try it
+Authorizations
+Authorization
+stringheaderrequired
+API key must be provided in the Authorization header
+Response
+200
+application/json
+Success response
+id
+integer
+Unique identifier for the cloud connection.
+cloud_type
+string
+Type of cloud service.
+name
+string
+User-given name for the cloud connection.</content>
+GET
+show ipaddrs:
+<content>GET
+/
+api
+/
+v0
+/
+users
+/
+{user_id}
+/
+ipaddrs
+Try it
+Authorizations
+Authorization
+stringheaderrequired
+API key must be provided in the Authorization header
+Path Parameters
+user_id
+stringrequired
+The ID of the user whose IP address history is being retrieved.
+Response
+200
+application/json
+Success response with IP address history
+success
+boolean
+Example:
+true
+results
+object[]
+Show child attributes</content>
+GET
+show subaccounts:
+<content>GET
+/
+api
+/
+v0
+/
+subaccounts
+Try it
+Authorizations
+Authorization
+stringheaderrequired
+API key must be provided in the Authorization header
+Response
+200
+application/json
+A list of subaccounts.
+users
+object[]
+Show child attributes</content>
+GET
+show team role:
+<content>GET
+/
+api
+/
+v0
+/
+team
+/
+roles
+/
+{id}
+Try it
+Authorizations
+Authorization
+stringheaderrequired
+API key must be provided in the Authorization header
+Path Parameters
+id
+stringrequired
+Name of the team role
+Response
+200
+application/json
+Success response
+id
+integer
+Role ID
+Example:
+1
+name
+string
+Name of the role
+Example:
+"admin"
+permissions
+string[]
+Permissions associated with the role
+Example:
+["read", "write"]</content>
+GET
+show user:
+<content>GET
+/
+api
+/
+v0
+/
+users
+/
+current
+Try it
+Authorizations
+Authorization
+stringheaderrequired
+API key must be provided in the Authorization header
+Response
+200
+application/json
+Success response with user information
+id
+integer
+The unique identifier of the user.
+key_id
+integer
+The API key ID associated with the user.
+email
+string
+The email address of the user.
+balance
+number<float>
+The current balance of the user.
+ssh_key
+string
+The SSH key associated with the user.
+sid
+string
+Server ID.</content>
+PUT
+transfer credit:
+<content>PUT
+/
+api
+/
+v0
+/
+commands
+/
+transfer_credit
+Try it
+Authorizations
+Authorization
+stringheaderrequired
+API key must be provided in the Authorization header
+Body
+application/json
+recipient
+stringrequired
+Email address or user ID of the recipient
+Example:
+"user@example.com"
+amount
+number<float>required
+Amount of credits to transfer (must be positive)
+Required range: x >= 0.01
+Example:
+100
+client_id
+string
+Client identifier (usually "me")
+Example:
+"me"
+apikey_id
+string
+Optional API key identifier for audit logging
+Response
+200
+application/json
+Transfer completed successfully
+success
+boolean
+Example:
+true</content>
+Serverless:
+GET
+show workergroup:
+<content>GET
+/
+api
+/
+v0
+/
+workergroups
+Try it
+Authorizations
+Authorization
+stringheaderrequired
+API key must be provided in the Authorization header
+Response
+200
+application/json
+Success response
+success
+boolean
+Example:
+true
+results
+object[]
+Show child attributes</content>
+POST
+create workergroup:
+<content>POST
+/
+api
+/
+v0
+/
+workergroups
+Try it
+Authorizations
+Authorization
+stringheaderrequired
+API key must be provided in the Authorization header
+Body
+application/json
+endpoint_name
+string
+Name of the endpoint group
+Example:
+"vLLM-Qwen3-8B"
+endpoint_id
+integer
+ID of existing endpoint group (alternative to endpoint_name)
+Example:
+123
+template_hash
+string
+Hash ID of template to use for worker instances
+Example:
+"abc123def456"
+template_id
+integer
+ID of template (alternative to template_hash)
+Example:
+456
+search_params
+stringdefault:verified=true rentable=true rented=false
+Search query for finding worker instances (alternative to template)
+Example:
+"gpu_name=RTX_3090 rentable=true"
+launch_args
+string
+Additional launch arguments for worker instances
+Example:
+"--env VAR=value"
+min_load
+numberdefault:1
+Minimum load threshold for scaling
+Example:
+1
+target_util
+numberdefault:0.9
+Target GPU utilization
+Example:
+0.9
+cold_mult
+numberdefault:3
+Cold start multiplier
+Example:
+3
+cold_workers
+integerdefault:3
+Number of cold workers to maintain
+Example:
+3
+max_workers
+integerdefault:20
+Maximum number of worker instances
+Example:
+20
+test_workers
+integerdefault:3
+Number of test workers
+Example:
+3
+gpu_ram
+integerdefault:24
+Minimum GPU RAM in GB
+Example:
+24
+Response
+200
+application/json
+Successfully created workergroup
+success
+boolean
+Example:
+true
+id
+integer
+ID of created autoscaling job
+Example:
+789</content>
+GET
+show endpoints:
+<content>GET
+/
+api
+/
+v0
+/
+endptjobs
+Try it
+Authorizations
+Authorization
+stringheaderrequired
+API key must be provided in the Authorization header
+Response
+200
+application/json
+A list of endpoint jobs
+success
+boolean
+Example:
+true
+results
+object[]
+Show child attributes</content>
+POST
+create endpoint:
+<content>POST
+/
+api
+/
+v0
+/
+endptjobs
+Try it
+Authorizations
+Authorization
+stringheaderrequired
+API key must be provided in the Authorization header
+Body
+application/json
+min_load
+numberdefault:10
+Minimum load for the endpoint.
+Example:
+50
+target_util
+numberdefault:0.9
+Target utilization for the endpoint.
+Example:
+0.75
+cold_mult
+numberdefault:2.5
+Multiplier for cold start.
+Example:
+2
+cold_workers
+integerdefault:5
+Number of cold workers.
+Example:
+5
+max_workers
+integerdefault:20
+Maximum number of workers.
+Example:
+20
+endpoint_name
+stringdefault:default-endpoint
+Name of the endpoint.
+Example:
+"my_endpoint"
+Response
+200
+application/json
+Success response
+success
+boolean
+Example:
+true
+result
+integer
+The ID of the created endpoint
+Example:
+12345</content>
+PUT
+update workergroup:
+<content>PUT
+/
+api
+/
+v0
+/
+workergroups
+/
+{id}
+Try it
+Authorizations
+Authorization
+stringheaderrequired
+API key must be provided in the Authorization header
+Path Parameters
+id
+integerrequired
+The ID of the workergroup to update.
+Example:
+4242
+Body
+application/json
+min_load
+number
+Minimum load for the workergroup.
+Example:
+1
+target_util
+number
+Target utilization for the workergroup.
+Example:
+0.9
+cold_mult
+number
+Cold multiplier for the workergroup.
+Example:
+3
+test_workers
+integerdefault:3
+Number of test workers for performance estimation.
+Example:
+3
+template_hash
+string
+Template hash for the workergroup.
+Example:
+"abc123def456"
+template_id
+integer
+Template ID for the workergroup.
+Example:
+456
+search_params
+stringdefault:verified=true rentable=true rented=false
+Search parameters for offers (JSON object or query string).
+Example:
+"gpu_name=RTX_3090 rentable=true"
+launch_args
+string
+Launch arguments for creating instances.
+Example:
+"--env VAR=value"
+gpu_ram
+number
+Estimated GPU RAM requirement.
+Example:
+24
+endpoint_name
+string
+Deployment endpoint name.
+Example:
+"vLLM-Qwen3-8B"
+endpoint_id
+integer
+Deployment endpoint ID.
+Example:
+123
+Response
+200
+application/json
+Successfully updated the workergroup.
+success
+boolean
+Example:
+true</content>
+DEL
+delete workergroup:
+<content>DELETE
+/
+api
+/
+v0
+/
+workergroups
+/
+{id}
+Try it
+Authorizations
+Authorization
+stringheaderrequired
+API key must be provided in the Authorization header
+Path Parameters
+id
+integerrequired
+ID of the workergroup to delete
+Example:
+4242
+Response
+200
+application/json
+Workergroup deleted successfully
+success
+boolean
+Example:
+true
+deleted_workers
+integer[]
+List of worker instances that were deleted
+Example:
+[1001, 1002]
+failed_workers
+integer[]
+List of worker instances that failed to delete
+Example:
+[]
+msg
+string
+Additional information about the deletion
+Example:
+"Deleted workergroup and 2 workers"</content>
+PUT
+update endpoint CLI Usage: vastai update endpoint ID [OPTIONS]:
+<content>PUT
+/
+api
+/
+v0
+/
+endptjobs
+/
+{id}
+Try it
+Authorizations
+Authorization
+stringheaderrequired
+API key must be provided in the Authorization header
+Path Parameters
+id
+integerrequired
+ID of the endpoint group to update
+Example:
+4242
+Body
+application/json
+min_load
+number
+Minimum floor load in perf units/s (token/s for LLMs)
+Example:
+0
+target_util
+number
+Target capacity utilization (fraction, max 1.0)
+Example:
+0.9
+cold_mult
+number
+Cold/stopped instance capacity target as multiple of hot capacity target
+Example:
+2.5
+cold_workers
+integer
+Min number of workers to keep 'cold' when you have no load
+Example:
+5
+max_workers
+integer
+Max number of workers your endpoint group can have
+Example:
+20
+endpoint_name
+string
+Deployment endpoint name
+Example:
+"my_endpoint"
+Response
+200
+application/json
+Success response
+success
+boolean
+Example:
+true</content>
+DEL
+delete endpoint:
+<content>DELETE
+/
+api
+/
+v0
+/
+endptjobs
+/
+{id}
+Try it
+Authorizations
+Authorization
+stringheaderrequired
+API key must be provided in the Authorization header
+Path Parameters
+id
+integerrequired
+ID of the endpoint group to delete
+Example:
+4242
+Response
+200
+application/json
+Endpoint group successfully deleted
+success
+boolean
+Example:
+true
+deleted_workers
+integer[]
+List of worker instances that were deleted (if any)
+Example:
+[1001, 1002]
+failed_workers
+integer[]
+List of worker instances that failed to delete (if any)
+Example:
+[]
+msg
+string
+Additional information about the deletion
+Example:
+"Deleted endpoint job and 2 workers"</content>
+POST
+get workergroup logs:
+<content>POST
+/
+get_workergroup_logs
+Try it
+Authorizations
+Authorization
+stringheaderrequired
+API key must be provided in the Authorization header
+Body
+application/json
+id
+integerdefault:12345required
+ID of the worker group
+Required range: x >= 1
+Example:
+12345
+tail
+integerdefault:10000
+Number of log lines to retrieve from the end
+Required range: x >= 1
+Example:
+1000
+Response
+200 - application/json
+Logs successfully retrieved.
+logs
+string
+The workergroup logs
+Example:
+"2023-10-01 12:00:00 - Workergroup started\n2023-10-01 12:01:00 - Instance scaled up"</content>
+POST
+get workergroup workers:
+<content>POST
+/
+get_workergroup_workers
+Try it
+Authorizations
+Authorization
+stringheaderrequired
+API key must be provided in the Authorization header
+Body
+application/json
+id
+integerdefault:12345required
+ID of the workergroup to monitor
+Required range: x >= 1
+Example:
+12345
+Response
+200 - application/json
+Workers successfully retrieved.
+workers
+object[]
+List of workers in this workergroup
+Show child attributes</content>
+POST
+get endpoint logs:
+<content>POST
+/
+get_endpoint_logs
+Try it
+Authorizations
+Authorization
+stringheaderrequired
+API key must be provided in the Authorization header
+Body
+application/json
+endpoint
+stringrequired
+Name of the endpoint
+Example:
+"vLLM-Qwen3-8B"
+tail
+integerdefault:10000
+Number of log lines to retrieve from the end
+Example:
+1000
+Response
+200 - application/json
+Successfully retrieved endpoint logs.
+logs
+string
+The endpoint logs
+Example:
+"2023-10-01 12:00:00 - Worker started\n2023-10-01 12:01:00 - Request processed"</content>
+POST
+get endpoint workers:
+<content>POST
+/
+get_endpoint_workers
+Try it
+Authorizations
+Authorization
+stringheaderrequired
+API key must be provided in the Authorization header
+Body
+application/json
+id
+integerdefault:12345required
+ID of the endpoint to monitor
+Required range: x >= 1
+Example:
+12345
+Response
+200 - application/json
+Successfully retrieved endpoints workers.
+workers
+object[]
+List of workers for this endpoint
+Show child attributes</content>
+POST
+route:
+<content>POST
+/
+route
+Try it
+Authorizations
+Authorization
+stringheaderrequired
+API key must be provided in the Authorization header
+Body
+application/json
+endpoint
+stringrequired
+Name of the endpoint
+Example:
+"vLLM-Qwen3-8B"
+cost
+number<float>default:100required
+The estimated compute resources for the request
+Required range: x >= 0
+Example:
+242
+Response
+200
+application/json
+Success response - either worker assignment or status
+Worker Available
+No Worker Available
+endpoint
+string
+Same as the input parameter
+Example:
+"vLLM-Qwen3-8B"
+url
+string
+The address of the worker instance to send the request to
+Example:
+"http://192.168.1.10:8000"
+cost
+number
+Same as the input parameter
+Example:
+242
+reqnum
+integer
+Request number corresponding to this worker instance
+Example:
+12345
+signature
+string
+Cryptographic signature authenticating the response
+Example:
+"a1b2c3d4e5f60708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f20"
+__request_id
+string
+Unique identifier generated by the server for this request
+Example:
+"xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"</content>
+Team:
+POST
+create team:
+<content>POST
+/
+api
+/
+v0
+/
+team
+Try it
+Authorizations
+Authorization
+stringheaderrequired
+API key must be provided in the Authorization header
+Body
+application/json
+team_name
+stringrequired
+Example:
+"my-awesome-team"
+transfer_credit
+number<float>
+Credits to transfer from personal account to team
+Example:
+0
+Response
+200
+application/json
+Team Successfully Created!
+success
+boolean
+Example:
+true
+msg
+string
+Example:
+"Team Successfully Created!"</content>
+DEL
+destroy team:
+<content>DELETE
+/
+api
+/
+v0
+/
+team
+Try it
+Authorizations
+Authorization
+stringheaderrequired
+API key must be provided in the Authorization header
+Response
+200
+application/json
+Team successfully deleted
+success
+boolean
+Example:
+true
+msg
+string
+Example:
+"Team Successfully Deleted!"
+pkey_id
+integer
+ID of the user's team API key which was converted back to a client key.
+Example:
+12345</content>
+POST
+create team role:
+<content>POST
+/
+api
+/
+v0
+/
+team
+/
+roles
+Try it
+Authorizations
+Authorization
+stringheaderrequired
+API key must be provided in the Authorization header
+Body
+application/json
+name
+stringrequired
+Name for the new role
+Example:
+"developer"
+permissions
+objectrequired
+JSON object containing permission definitions
+Show child attributes
+Response
+200
+application/json
+Role created successfully
+msg
+string
+Example:
+"success"</content>
+POST
+invite team member:
+<content>POST
+/
+api
+/
+v0
+/
+team
+/
+invite
+Try it
+Authorizations
+Authorization
+stringheaderrequired
+API key must be provided in the Authorization header
+Body
+application/json
+email
+string<email>required
+Email address of the user to invite
+Example:
+"user@example.com"
+role
+stringrequired
+Role to assign to the new team member
+Example:
+"developer"
+Response
+200
+application/json
+Invitation sent successfully
+success
+boolean
+Example:
+true
+msg
+string
+Example:
+"New invitation sent to ${email}"</content>
+DEL
+remove team member:
+<content>DELETE
+/
+api
+/
+v0
+/
+team
+/
+members
+/
+{id}
+Try it
+Authorizations
+Authorization
+stringheaderrequired
+API key must be provided in the Authorization header
+Path Parameters
+id
+integerrequired
+User ID of the team member to remove
+Response
+200
+application/json
+Member removed successfully
+status
+enum<string>
+Available options: success 
+Example:
+"success"
+message
+string
+Example:
+"User removed from the team."</content>
+DEL
+remove team role:
+<content>DELETE
+/
+api
+/
+v0
+/
+team
+/
+roles
+/
+{name}
+Try it
+Authorizations
+Authorization
+stringheaderrequired
+API key must be provided in the Authorization header
+Path Parameters
+name
+stringrequired
+Name of the role to remove
+Response
+200
+application/json
+Role removed successfully
+status
+enum<string>
+Available options: success 
+Example:
+"success"
+message
+string
+Example:
+"Role removed from team"</content>
+GET
+show team members:
+<content>GET
+/
+api
+/
+v0
+/
+team
+/
+members
+Try it
+Authorizations
+Authorization
+stringheaderrequired
+API key must be provided in the Authorization header
+Response
+200
+application/json
+Success response
+id
+integer
+User ID
+Example:
+123
+username
+string
+Username of the team member
+Example:
+"johndoe"
+email
+string
+Email of the team member
+Example:
+"johndoe@example.com"
+fullname
+string
+Full name of the team member
+Example:
+"John Doe"
+roles
+string[]
+Roles assigned to the team member
+Example:
+["admin", "member"]</content>
+PUT
+update team role:
+<content>PUT
+/
+api
+/
+v0
+/
+team
+/
+roles
+/
+{id}
+Try it
+Authorizations
+Authorization
+stringheaderrequired
+API key must be provided in the Authorization header
+Path Parameters
+id
+integerrequired
+ID of the role to update.
+Body
+application/json
+name
+stringrequired
+New name for the role.
+permissions
+objectrequired
+JSON encoded permissions for the role.
+Response
+200 - application/json
+Successfully updated team role.
+The response is of type string.
+Example:
+"Successfully Updated Team Role For <role_name>"</content>
+GET
+show team roles:
+<content>GET
+/
+api
+/
+v0
+/
+team
+/
+roles-full
+Try it
+Authorizations
+Authorization
+stringheaderrequired
+API key must be provided in the Authorization header
+Response
+200
+application/json
+Success response
+name
+string
+Name of the role
+Example:
+"admin"
+permissions
+string[]
+Permissions associated with the role
+Example:
+["read", "write"]
+identifier
+string
+Unique identifier for the role
+Example:
+"admin_role"
+id
+integer
+Role ID
+Example:
+1234</content>
+Search:
+GET
+search templates:
+<content>GET
+/
+api
+/
+v0
+/
+template
+Try it
+Authorizations
+Authorization
+stringheaderrequired
+API key must be provided in the Authorization header
+Query Parameters
+select_filters
+string
+JSON-encoded filter object. Format: {"field": {"op": value}}. Example: {"use_ssh": {"eq": true}, "recommended": {"eq": true}} or {"count_created": {"gt": 100}}
+select_cols
+string
+JSON-encoded array of columns to return. Example: ["*"] for all columns or ["id", "name", "hash_id"] for specific columns.
+order_by
+string
+Column to order the results by.
+Response
+200
+application/json
+Successfully retrieved templates
+success
+booleanrequired
+Example:
+true
+templates_found
+integerrequired
+Number of templates found.
+Example:
+5
+templates
+object[]required
+List of templates matching the search criteria.
+Show child attributes</content>
+GET
+search benchmarks:
+<content>GET
+/
+api
+/
+v0
+/
+benchmarks
+Try it
+Authorizations
+Authorization
+stringheaderrequired
+API key must be provided in the Authorization header
+Query Parameters
+query
+string
+Search query string to filter benchmarks.
+Response
+200
+application/json
+Success response
+contract_id
+integer
+ID of instance/contract reporting benchmark
+id
+integer
+Benchmark unique ID
+image
+string
+Image used for benchmark
+last_update
+number<float>
+Date of benchmark
+machine_id
+integer
+ID of machine benchmarked
+model
+string
+Name of model used in benchmark
+name
+string
+Name of benchmark
+num_gpus
+integer
+Number of GPUs used in benchmark
+score
+number<float>
+Benchmark score result</content>
+POST
+search offers:
+<content>POST
+/
+api
+/
+v0
+/
+bundles
+Try it
+Authorizations
+Authorization
+stringheaderrequired
+API key must be provided in the Authorization header
+Body
+application/json
+limit
+integer
+Max offers to return
+type
+enum<string>
+Instance type for the offer. Affects pricing calculation.
+ondemand: Fixed pricing based on listed rates. Default.
+bid (interruptible): Uses minimum bid price. Lower cost but may be interrupted if outbid.
+reserved: Reserved instance pricing.
+Available options: ondemand, bid, reserved 
+verified
+object
+Machine verification status
+Show child attributes
+rentable
+object
+Whether machine is rentable
+Show child attributes
+rented
+object
+When set to true, include offers where the calling user already has rented GPUs.
+This is useful for finding offers on machines you're already renting.
+Show child attributes
+gpu_name
+object
+GPU model name. Example: {"eq": "RTX_4090"} or {"in": ["RTX_3090", "RTX_4090"]}
+Show child attributes
+reliability
+object
+Machine reliability score (0-1). Example: {"gte": 0.99}
+num_gpus
+object
+Number of GPUs. Example: {"gte": 4} or {"in": [1, 2, 4, 8]}
+Show child attributes
+gpu_ram
+object
+GPU RAM in MB. Example: {"gte": 24000}
+duration
+object
+Minimum required rental duration in seconds (the offer must be available for at least this long from now).
+machine_id
+object
+Filter by specific host machine ID
+dlperf_per_dphtotal
+object
+DLPerf per dollar per hour
+dph_total
+object
+Total $/hour rental cost. Example: {"lte": 0.5}
+flops_per_dphtotal
+object
+TFLOPs per $/hour
+geolocation
+object
+Machine location (two letter country code). Example: {"in": ["US", "CA"]}
+Show child attributes
+gpu_arch
+object
+Host machine GPU architecture (e.g. nvidia, amd). Example: {"eq": "nvidia"}
+dlperf
+object
+Deep Learning performance score
+cuda_max_good
+object
+Maximum supported CUDA version
+inet_down
+object
+Download bandwidth (MB/s)
+inet_up
+object
+Upload bandwidth (MB/s)
+inet_down_cost
+object
+Download bandwidth cost ($/GB)
+inet_up_cost
+object
+Upload bandwidth cost ($/GB)
+driver_version
+object
+NVIDIA driver version in the format "XXX.XX.XX"
+compute_cap
+object
+CUDA compute capability x 100. Use 650 for compute capability 6.5 or 700 for 7.0.
+cpu_arch
+object
+Host machine CPU architecture (Default is amd64). Example: {"eq": "amd64"}
+has_avx
+object
+CPU supports AVX instruction set
+cpu_cores
+object
+Number of virtual CPUs
+cpu_cores_effective
+object
+Effective vCPU count for the offer
+cpu_ghz
+object
+CPU clock speed in GHz
+cpu_ram
+object
+CPU RAM in MB
+datacenter
+object
+Show only datacenter offers
+external
+object
+Show external offers in addition to datacenter offers
+disk_bw
+object
+Disk read bandwidth in MB/s
+disk_space
+object
+Disk storage space in GB
+bw_nvlink
+object
+NVLink interconnect bandwidth in GB/s. Use when filtering for multi-GPU systems with high-speed NVLink.
+gpu_max_power
+object
+GPU power limit in watts
+gpu_max_temp
+object
+GPU temperature limit in Celsius
+gpu_mem_bw
+object
+GPU memory bandwidth in GB/s
+gpu_total_ram
+object
+Total GPU RAM across all GPUs in MB
+gpu_frac
+object
+Fraction of the total GPU resources being offered
+gpu_display_active
+object
+Whether the GPU has an attached display
+direct_port_count
+object
+Number of direct ports
+host_id
+object
+Host user ID
+id
+object
+Offer ID
+min_bid
+object
+Minimum bid price ($/hour)
+mobo_name
+object
+Motherboard name
+pci_gen
+object
+PCIe generation
+pcie_bw
+object
+PCIe bandwidth (CPU to GPU)
+storage_cost
+object
+Storage cost in $/GB/month
+static_ip
+object
+Whether the IP address is static/stable
+total_flops
+object
+Total theoretical GPU compute performance (TFLOPs) across all GPUs.
+os_version
+object
+Host machine Ubuntu OS version
+ubuntu_version
+object
+Host machine Ubuntu OS version (alias for os_version)
+verification
+object
+Machine verification status string (verified, deverified, unverified). Example: {"eq": "verified"}
+vms_enabled
+object
+Whether the machine is a VM instance
+order
+string[][]
+Sort fields and directions
+Required array length: 2 elements
+allocated_storage
+number
+Storage allocation size in GB for the instance.
+This sets the disk size when creating the instance and cannot be changed later.
+Default is 8GB.
+Response
+200
+application/json
+Successful search response
+offers
+object[]</content>
+Templates:
+PUT
+edit template:
+<content>PUT
+/
+api
+/
+v0
+/
+template
+Try it
+Authorizations
+Authorization
+stringheaderrequired
+API key must be provided in the Authorization header
+Body
+application/json
+hash_id
+stringrequired
+Hash ID of the template to edit. Required for identifying which template to update.
+name
+string
+Name of the template
+image
+string
+Docker image path
+desc
+string
+Short description of the template
+recommended_disk_space
+number
+Recommended disk space in GB
+Response
+200
+application/json
+Template updated successfully
+success
+boolean
+template
+object
+Show child attributes</content>
+POST
+create template:
+<content>POST
+/
+api
+/
+v0
+/
+template
+Try it
+Authorizations
+Authorization
+stringheaderrequired
+API key must be provided in the Authorization header
+Body
+application/json
+name
+stringdefault:Example Templaterequired
+Name of the template
+image
+stringdefault:vastai/base-imagerequired
+Docker image path. Used when launching instances from this template.
+tag
+stringdefault:latest
+Docker image tag specifying version of the image. Defaults to latest. Can also be included in the image field instead.
+env
+string
+Environment variables and port mappings in Docker flag format.
+Example: "-e HF_TOKEN=hf_xxx123456789 -e MODEL_ID=TheBloke/Llama-2-7B-Chat-GPTQ -p 8000:8000"
+onstart
+string
+Commands to run when instance starts
+Example : env | grep _ >> /etc/environment; echo 'starting up'
+runtype
+enum<string>default:args
+Launch mode for the instance. Defaults to args. Recommended - use ssh with ssh_direct: true for reliable SSH access.
+Available options: ssh, jupyter, args 
+ssh_direct
+boolean
+Enable direct SSH connection
+jup_direct
+boolean
+Enable direct Jupyter connection
+jupyter_dir
+string
+Directory to launch Jupyter from
+Example : /home/notebooks
+use_jupyter_lab
+boolean
+Use JupyterLab instead of Jupyter Notebook
+docker_login_repo
+string
+Name of the private Docker repo (i.e docker.io)
+docker_login_user
+string
+Username for private Docker repo
+docker_login_pass
+string
+Access token or password for private Docker repo.
+extra_filters
+object
+Additional machine search filters. Example: {"cuda_max_good": {"gte": 12.6}}
+recommended_disk_space
+number
+Recommended disk space in GB. Defaults to 8GB if not specified.
+desc
+string
+Short description of the template
+readme
+string
+Longer documentation/readme content for the template
+args_str
+string
+Arguments string passed to the container entrypoint when runtype is args
+use_ssh
+boolean
+Enable SSH access to instances created from this template
+href
+string
+Link to Docker Hub or image documentation
+repo
+string
+Repository identifier (e.g., library/ubuntu)
+private
+boolean
+Whether the template is private (not publicly searchable)
+volume_info
+object
+UI hint for volume configuration. Note: This does not affect instance creation - use volume_info in the instance creation request to actually attach volumes.
+hash_id
+string
+Content-based hash ID of the template. Can be included when editing but will change based on new content.
+Response
+200
+application/json
+Template created or existing template found
+success
+boolean
+Whether operation was successful
+msg
+string
+Status message
+Example:
+"Template Created Successfully! New Template ID: 123456"
+template
+object
+Template details
+Show child attributes</content>
+DEL
+delete template:
+<content>DELETE
+/
+api
+/
+v0
+/
+template
+Try it
+Authorizations
+Authorization
+stringheaderrequired
+API key must be provided in the Authorization header
+Body
+application/json
+template_id
+integerrequired
+Numeric ID of the template to delete (not hash_id)
+Response
+200
+application/json
+Template deleted successfully
+success
+boolean
+Example:
+true</content>
+Volumes:
+GET
+list volumes:
+<content>GET
+/
+api
+/
+v0
+/
+volumes
+Try it
+Authorizations
+Authorization
+stringheaderrequired
+API key must be provided in the Authorization header
+Response
+200
+application/json
+Success response
+volumes
+object[]
+Show child attributes</content>
+PUT
+rent volume:
+<content>PUT
+/
+api
+/
+v0
+/
+volumes
+Try it
+Authorizations
+Authorization
+stringheaderrequired
+API key must be provided in the Authorization header
+Body
+application/json
+id
+integerrequired
+ID for the volume
+Example:
+420
+size
+integer
+Size in GB (Defaults to 15)
+Example:
+15
+Response
+200 - application/json
+Success response
+success
+boolean
+Example:
+true
+volume_name
+string
+Name of the created/resized volume
+Example:
+"V.20118481"</content>
+DEL
+delete volume:
+<content>DELETE
+/
+api
+/
+v0
+/
+volumes
+Try it
+Authorizations
+Authorization
+stringheaderrequired
+API key must be provided in the Authorization header
+Body
+application/json
+id
+integerrequired
+ID of the volume to delete
+Example:
+100
+Response
+200
+application/json
+Success response
+success
+boolean
+Example:
+true</content>
+POST
+search volumes:
+<content>POST
+/
+api
+/
+v0
+/
+volumes
+/
+search
+Try it
+Authorizations
+Authorization
+stringheaderrequired
+API key must be provided in the Authorization header
+Query Parameters
+q
+object
+Query parameters for filtering volume search results
+Show child attributes
+Body
+application/json
+limit
+integerdefault:64
+Maximum number of results to return
+Example:
+100
+Response
+200
+application/json
+Success response
+offers
+object[]
+Show child attributes</content>
+POST
+unlist volume:
+<content>POST
+/
+api
+/
+v0
+/
+volumes
+/
+unlist
+Try it
+Authorizations
+Authorization
+stringheaderrequired
+API key must be provided in the Authorization header
+Body
+application/json
+id
+integerrequired
+ID of the volume listing to unlist
+Example:
+2029
+Response
+200
+application/json
+Success response
+success
+boolean
+Example:
+true
+msg
+string
+Success message
+Example:
+"Unlisted Volume 2029."</content>
+Billing:
+GET
+search invoices:
+<content>GET
+/
+api
+/
+v0
+/
+invoices
+Try it
+Authorizations
+Authorization
+stringheaderrequired
+API key must be provided in the Authorization header
+Body
+application/json
+type
+string
+Type of invoices to retrieve
+Example:
+"charge"
+select_filters
+object
+Filters to apply to the invoice selection.
+Response
+200
+application/json
+Success response
+type
+string
+Example:
+"charge"
+description
+string
+Example:
+"Instance 123 GPU charge: hours * $/hr"
+timestamp
+integer
+Example:
+1633036800
+quantity
+string
+Example:
+"10.000"
+rate
+string
+Example:
+"0.1000"
+amount
+string
+Example:
+"1.000"
+instance_id
+integer
+Example:
+123</content>
+GET
+show deposit:
+<content>GET
+/
+api
+/
+v0
+/
+instances
+/
+balance
+/
+{id}
+Try it
+Authorizations
+Authorization
+stringheaderrequired
+API key must be provided in the Authorization header
+Path Parameters
+id
+integerrequired
+The ID of the instance.
+Response
+200
+application/json
+Success response
+success
+boolean
+Example:
+true
+refundable_deposit
+number
+The refundable deposit amount.
+Example:
+100
+total_discount
+number
+The total discount applied.
+Example:
+10
+discount_months
+integer
+The number of months the discount applies.
+Example:
+3</content>
+GET
+show earnings:
+<content>GET
+/
+api
+/
+v0
+/
+users
+/
+{user_id}
+/
+machine-earnings
+Try it
+Authorizations
+Authorization
+stringheaderrequired
+API key must be provided in the Authorization header
+Path Parameters
+user_id
+integerrequired
+The ID of the user.
+Query Parameters
+sday
+integer
+Start day for the earnings report.
+eday
+integer
+End day for the earnings report.
+machid
+integer
+Optional machine ID to filter earnings.
+last_days
+integer
+Number of days to look back from today.
+Response
+200
+application/json
+Success response
+summary
+object
+Show child attributes
+username
+string
+email
+string
+fullname
+string
+address1
+string
+address2
+string
+city
+string
+zip
+string
+country
+string
+taxinfo
+string
+current
+object
+Show child attributes
+per_machine
+object[]
+Show child attributes
+per_day
+object[]
+Show child attributes</content>
+GET
+show invoices:
+<content>GET
+/
+api
+/
+v1
+/
+invoices
+Try it
+Authorizations
+Authorization
+stringheaderrequired
+API key must be provided in the Authorization header
+Body
+application/json
+select_filters
+objectrequired
+Shows invoices using given filters.
+Required : Filter by timerange using when field.
+Use unix timestamps (UTC) comparison operators.
+Example : To filter invoices from June 1, 2025 to Dec 1, 2025:
+"select_filters": {
+  "when": {
+      "gte": 1748736000,
+      "lte": 1764547200 
+    }
+  }
+Supported operators:
+gt or gte: invoices created after this time
+lt or lte: invoices created before this time
+Optional : Filter invoices by service using service field.
+Supported services:
+transfer, stripe_payments, bitpay, coinbase, crypto.com, instance_prepay, paypal_manual, wise_manual
+Supported operators:
+in : include only these services
+notin : exclude these services
+eq : matches a single service
+Example: Get paypal and wise invoices only
+"service": {
+  "in": ["paypal_manual", "wise_manual"]
+}
+Show child attributes
+latest_first
+booleandefault:true
+Sort by newest invoices first.
+order_by
+object[]
+Sort invoices by given columns.
+Supported columns: paid_on, amount_cents, when
+Example : To sort by oldest invoices first
+"order_by": [
+  {
+    "col": "when",
+    "dir": "asc"
+  }
+]
+Show child attributes
+limit
+integerdefault:60
+Maximum number of invoices to return.
+Response
+200
+application/json
+Paginated invoice results</content>
+

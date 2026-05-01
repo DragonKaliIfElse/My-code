@@ -1,0 +1,120 @@
+#meu_prompt faça uma função em python de um contador de tokens, que recebe como parametro a string
+
+Aqui vai uma implementação simples e funcional de um contador de tokens em Python. Vou te dar duas abordagens: uma genérica (sem dependências) e outra compatível com modelos da OpenAI (mais precisa).
+🔹 1. Versão simples (aproximação por palavras)
+
+Essa não usa nenhuma lib externa — considera tokens como palavras separadas por espaço:
+
+def contar_tokens_simples(texto: str) -> int:
+    if not texto:
+        return 0
+    return len(texto.split())
+
+📌 Limitação: isso não reflete tokens reais de LLMs, porque modelos quebram palavras em subpartes.
+🔹 2. Versão correta (usando tokenizer real - tiktoken)
+
+Se você quer precisão (ex: custo de API, limite de contexto), use o tokenizer oficial:
+
+import tiktoken
+
+def contar_tokens(texto: str, modelo: str = "gpt-4o-mini") -> int:
+    if not texto:
+        return 0
+
+    encoding = tiktoken.encoding_for_model(modelo)
+    tokens = encoding.encode(texto)
+    return len(tokens)
+
+📦 Instalar dependência:
+
+pip install tiktoken
+
+🔍 Exemplo de uso
+
+texto = "Isso é um teste de contagem de tokens."
+
+print(contar_tokens_simples(texto))  # Ex: 8 (aproximado)
+print(contar_tokens(texto))          # Ex: pode dar diferente (mais preciso)
+
+💡 Dica prática (importante)
+
+    Tokens ≠ palavras
+
+    "computador" pode virar vários tokens dependendo do modelo
+
+    Emojis, pontuação e acentos influenciam bastante
+
+Se quiser, posso te fazer
+uma versão otimizada pra batch (lista de strings) ou
+já integrada com cálculo de custo de API.
+
+#meu_prompt agora faça uma função que indentifique uma linha que comece com alguma expressão que eu queira e use isso e armazene em uma string toda concatenada em uma só, e uma outra função que concatene todas as linhas menos as que comecem com a expressão que eu determinei
+
+Beleza — dá pra fazer isso de forma limpa e eficiente usando startswith (ou regex se quiser algo mais flexível). Vou te entregar duas funções diretas, já pensando em performance e clareza.
+🔹 1. Capturar e concatenar linhas que começam com um prefixo
+
+def extrair_linhas_com_prefixo(texto: str, prefixos) -> str:
+    """
+    Retorna uma string única com todas as linhas que começam com
+    qualquer um dos prefixos informados.
+    
+    prefixos: pode ser string ou lista/tupla de strings
+    """
+    if isinstance(prefixos, str):
+        prefixos = (prefixos,)
+    else:
+        prefixos = tuple(prefixos)
+
+    linhas_filtradas = []
+    
+    for linha in texto.splitlines():
+        if linha.startswith(prefixos):
+            linhas_filtradas.append(linha)
+
+    return "".join(linhas_filtradas)
+
+🔹 2. Concatenar todas as linhas exceto as que começam com o prefixo
+
+def remover_linhas_com_prefixo(texto: str, prefixos) -> str:
+    """
+    Retorna uma string com todas as linhas que NÃO começam com
+    os prefixos informados.
+    """
+    if isinstance(prefixos, str):
+        prefixos = (prefixos,)
+    else:
+        prefixos = tuple(prefixos)
+
+    linhas_restantes = []
+    
+    for linha in texto.splitlines():
+        if not linha.startswith(prefixos):
+            linhas_restantes.append(linha)
+
+    return "".join(linhas_restantes)
+
+🔍 Exemplo de uso
+
+texto = """#meu_prompt Faça isso
+linha normal 1
+#meu_prompt Outra coisa
+linha normal 2"""
+
+print(extrair_linhas_com_prefixo(texto, "#meu_prompt"))
+# saída: "#meu_prompt Faça isso#meu_prompt Outra coisa"
+
+print(remover_linhas_com_prefixo(texto, "#meu_prompt"))
+# saída: "linha normal 1linha normal 2"
+
+💡 Melhorias rápidas (se quiser evoluir)
+
+    Preservar quebra de linha → usar "\n".join(...)
+
+    Ignorar espaços antes do prefixo → linha.strip().startswith(...)
+
+    Regex (caso queira padrões mais complexos)
+
+Se quiser, posso adaptar isso pra stream de arquivo grande (sem carregar tudo na memória) ou já integrar com parsing de logs.
+
+
+
