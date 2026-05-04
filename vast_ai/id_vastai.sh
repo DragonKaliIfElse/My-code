@@ -1,0 +1,1 @@
+vastai show instances --raw | grep '"id":' | awk '{print$2}' |sed 's|,||'
