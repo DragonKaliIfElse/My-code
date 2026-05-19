@@ -1,5 +1,6 @@
-OPEN_BUTTON_TOKEN=$(cat /home/4n4tm4n/.OPEN_BUTTON_TOKEN)
-ID=$(vastai search offers 'gpu_ram>=32 gpu_ram<64 gpu_name=RTX_A6000' --order dph --limit 1 --raw | grep ask_contract_id | awk '{print$2}' | sed 's|,||')
+#!/bin/fish
+set OPEN_BUTTON_TOKEN (cat /home/4n4tm4n/.OPEN_BUTTON_TOKEN)
+set ID (vastai search offers 'gpu_ram>=32 gpu_ram<64 gpu_name=RTX_A6000' --order dph --limit 1 --raw | grep ask_contract_id | awk '{print$2}' | sed 's|,||')
 vastai create instance "$ID" \
   --image vastai/vllm:v0.19.0-cuda-12.9 \
   --env '-p 1111:1111 -p 7860:7860 -p 8080:8080 -p 8000:8000 -p 8265:8265 \

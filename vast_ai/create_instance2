@@ -1,0 +1,217 @@
+#!/bin/fish
+# =============================================================================
+# CONFIGURAÇÕES GLOBAIS
+# =============================================================================
+set MODEL_REPO "unsloth/Qwen3.6-35B-A3B-GGUF"
+set MODEL_FILE "Qwen3.6-35B-A3B-UD-Q5_K_XL.gguf"
+set MODEL_URL "https://huggingface.co/$MODEL_REPO/resolve/main/$MODEL_FILE"
+set LLAMA_REPO "https://github.com/ggerganov/llama.cpp"
+set WORKSPACE "/workspace"
+set MODEL_DIR "$WORKSPACE/models"
+set LLAMA_DIR "$WORKSPACE/llama.cpp"
+
+# Parâmetros otimizados para Tesla V100 32GB
+set GPU_LAYERS 35          # Camadas na GPU (reduzir se houver OOM)
+set CTX_SIZE 2048          # Tamanho do contexto (economiza VRAM)
+set THREADS 8              # Threads da CPU
+set PARALLEL 1             # Requisições paralelas
+
+# Token HuggingFace (opcional, para modelos gated)
+if not set -q HF_TOKEN
+  set HF_TOKEN ""
+end
+# =============================================================================
+# FUNÇÕES AUXILIARES
+# =============================================================================
+function log
+    echo "[$(date '+%Y-%m-%d %H:%M:%S')] $argv" >&2
+end
+
+function error_exit
+  log "❌ ERRO: $argv"
+  exit 1
+end
+
+if not command -v jq
+    error_exit "jq não instalado"
+end 
+if not command -v vastai
+    error_exit "vastai não instalado"
+end
+# =============================================================================
+# 1. AUTENTICAÇÃO E BUSCA DE OFERTA
+# =============================================================================
+log "🔐 Carregando credenciais..."
+if not set -q VAST_API_KEY
+  set VAST_API_KEY (cat ~/.vast_api_key 2>/dev/null; or echo '')
+end 
+
+set API_KEY "$VAST_API_KEY"
+
+if test -z "$API_KEY"
+  error_exit "API key não encontrada. Defina VAST_API_KEY ou ~/.vast_api_key"
+end
+
+log "🔍 Buscando Tesla V100 com ~32GB VRAM..."
+set OFFER_ID (vastai search offers 'gpu_ram>=32 gpu_ram<40 gpu_name=Tesla_V100' --order dph --limit 1 --raw | grep ask_contract_id | awk '{print$2}' | sed 's|,||')
+
+if test -z "$OFFER_ID"
+  error_exit "Nenhuma oferta Tesla V100 disponível encontrada"
+end
+
+log "✅ Oferta selecionada: ID=$OFFER_ID"
+
+# =============================================================================
+# 2. CRIAÇÃO DA INSTÂNCIA
+# =============================================================================
+log "🚀 Criando instância..."
+
+# Script de inicialização automatizado escrito em Fish!
+set ONSTART_CMD '#!/bin/bash
+# 1. Instala o fish rapidamente caso não exista
+if ! command -v fish &> /dev/null; then
+    apt-get update -qq && apt-get install -y -qq fish > /dev/null 2>&1
+end
+
+# 2. Passa o controle e o restante do script direto para o interpretador Fish
+exec fish <<\'FISH_INNER_EOF\'
+
+# =============================================================================
+# DAQUI PARA BAIXO JÁ É SINTAXE PURA DO FISH SHELL CORRENDO NO UBUNTU
+# =============================================================================
+
+function log
+    echo "[$(date '+%H:%M:%S')] $argv" >&2
+end
+
+function error_exit
+    log "❌ $argv"
+    exit 1
+end
+
+# 1. Instalar dependências restantes usando Fish
+log "📦 Instalando dependências de compilação..."
+apt-get install -y -qq git build-essential cmake curl wget libcurl4-openssl-dev \
+    > /dev/null 2>&1; or error_exit "Falha ao instalar dependências"
+
+# 2. Clonar e compilar llama.cpp com CUDA
+log "🔨 Compilando llama.cpp com suporte CUDA..."
+if not test -d "/workspace/llama.cpp/build/bin/llama-server"
+    git clone --depth 1 https://github.com/ggerganov/llama.cpp /workspace/llama.cpp 2>/dev/null; or true
+    cd /workspace/llama.cpp
+    
+    cmake -B build -DGGML_CUDA=ON -DCMAKE_BUILD_TYPE=Release > /dev/null 2>&1
+    cmake --build build --config Release -j(nproc) --target llama-server > /dev/null 2>&1; \
+        or error_exit "Falha na compilação do llama.cpp"
+end
+
+# 3. Baixar o modelo GGUF
+log "📥 Baixando modelo $MODEL_FILE..."
+mkdir -p /workspace/models
+set MODEL_PATH "/workspace/models/$MODEL_FILE"
+
+# Verifica se o arquivo não existe ou se tem menos de 1GB (download incompleto)
+if not test -f "$MODEL_PATH"; or test (stat -c%s "$MODEL_PATH" 2>/dev/null; or echo 0) -lt 1000000000
+    set wget_cmd wget --continue --progress=bar:force
+    if test -n "$HF_TOKEN"
+        set wget_cmd $wget_cmd --header="Authorization: Bearer $HF_TOKEN"
+    end
+    
+    $wget_cmd -O "$MODEL_PATH.tmp" "$MODEL_URL" 2>/dev/null; \
+        or error_exit "Falha no download do modelo"
+    
+    mv "$MODEL_PATH.tmp" "$MODEL_PATH"
+    log "✅ Modelo baixado: (ls -lh "$MODEL_PATH" | awk '{print $5}')"
+else
+    log "✅ Modelo já existe, pulando download"
+end
+
+# 4. Iniciar llama-server com parâmetros otimizados recebidos via ENV
+log "🔥 Iniciando llama-server..."
+exec /workspace/llama.cpp/build/bin/llama-server \
+    -m "$MODEL_PATH" \
+    --host 0.0.0.0 \
+    --port 8000 \
+    --ctx-size "$CTX_SIZE" \
+    --n-gpu-layers "$GPU_LAYERS" \
+    --threads "$THREADS" \
+    --parallel "$PARALLEL" \
+    --flash-attn \
+    --cache-type-k q4_0 \
+    --cache-type-v q4_0 \
+    --verbose 2>&1 | tee /workspace/llama-server.log
+
+FISH_INNER_EOF
+'
+
+# Criar instância
+set INSTANCE_RESULT (vastai create instance "$OFFER_ID" \
+    --image ubuntu:22.04 \
+    --disk 60 \
+    --ssh --direct \
+    --env "-p 8000:8000 -e MODEL_FILE='$MODEL_FILE' -e MODEL_URL='$MODEL_URL' -e HF_TOKEN='$HF_TOKEN'" \
+    --onstart-cmd "$ONSTART_CMD" \
+    --raw 2>/dev/null)
+
+set INSTANCE_ID (echo "$INSTANCE_RESULT" | jq -r '.new_contract // empty' 2>/dev/null)
+if test -z "$INSTANCE_ID"
+    error_exit "Falha ao criar instância: $INSTANCE_RESULT"
+end
+
+log "✅ Instância criada: ID=$INSTANCE_ID"
+
+# =============================================================================
+# 3. AGUARDAR INICIALIZAÇÃO E TESTAR API
+# =============================================================================
+log "⏳ Aguardando inicialização (pode levar 15-45 min para download + compilação)..."
+/
+set MAX_WAIT 3600  # 1 hora máxima
+set WAITED 0
+set INTERVAL 30
+
+while test $WAITED -lt $MAX_WAIT
+    set STATUS (vastai show instance "$INSTANCE_ID" --raw 2>/dev/null | jq -r '.actual_status // "unknown"')
+    
+    switch $STATUS
+        case "running"
+            # Tentar conectar à API
+            set IP_PORT (vastai show instance "$INSTANCE_ID" --raw 2>/dev/null | \
+                jq -r '.ports["8000/tcp"][0] // empty | "127.0.0.1:\(.HostPort)"' 2>/dev/null)
+            
+            if test -n "$IP_PORT"; and curl -sf "http://$IP_PORT/health" >/dev/null 2>&1
+                log "🎉 API pronta em http://$IP_PORT"
+                
+                # Teste rápido
+                log "🧪 Executando teste de API..."
+                curl -sf "http://$IP_PORT/v1/models" | jq -c '.data[0] // {error: "sem modelos"}' || true
+                
+                echo ""
+                echo "============================================"
+                echo "✅ INSTÂNCIA PRONTA PARA USO!"
+                echo "============================================"
+                echo "API Endpoint: http://$IP_PORT/v1"
+                echo "Modelo: $MODEL_FILE"
+                echo ""
+                echo "Exemplo de uso com curl:"
+                echo "  curl http://$IP_PORT/v1/chat/completions \\"
+                echo "    -H 'Content-Type: application/json' \\"
+                echo "    -d '{\"messages\":[{\"role\":\"user\",\"content\":\"Olá!\"}],\"max_tokens\":100}'"
+                echo ""
+                echo "Para parar a instância depois:"
+                echo "  vastai stop instance $INSTANCE_ID"
+                echo "Para destruir (para de cobrar tudo):"
+                echo "  vastai destroy instance $INSTANCE_ID"
+                echo "============================================"
+                
+                exit 0
+            end
+        case "exited" "stopped" "offline"
+            error_exit "Instância parou inesperadamente. Verifique logs: vastai logs $INSTANCE_ID --tail 50"
+    end
+    
+    sleep $INTERVAL
+    set WAITED (math $WAITED + $INTERVAL)
+    log "⏳ Aguardando... ($WAITED s/$MAX_WAIT s) - Status: $STATUS"
+end
+
+error_exit "Tempo limite excedido. Verifique: vastai logs $INSTANCE_ID --tail 100"

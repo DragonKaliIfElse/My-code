@@ -1,3 +1,4 @@
+#!/bin/fish
 curl http://108.179.129.245:57239/v1/chat/completions \
   -H "Content-Type: application/json" \
   -d '{

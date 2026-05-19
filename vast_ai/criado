@@ -1,0 +1,10 @@
+#!/bin/fish
+while true
+  sleep 1
+  set OUT (vastai show instances)
+
+  if not echo "$OUT" | grep -q "loading"
+    echo 'acabou'
+    break
+  end
+end
