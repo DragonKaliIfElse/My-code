@@ -97,7 +97,8 @@ end
 # Extrai IP público e porta mapeada
 set PUBLIC_IP (vastai show instance "$INSTANCE_ID" --raw | jq -r '.public_ipaddr')
 set HOST_PORT (vastai show instance "$INSTANCE_ID" --raw | jq -r '.ports["8080/tcp"][0].HostPort')
-set HOST_PORT (vastai show instance "$INSTANCE_ID" --raw | jq -r '.ports["8080/tcp"][0].HostPort')
+set SSH_PORT (vastai show instance "$INSTANCE_ID" --raw | jq -r '.direct_port_end')
+set COST (vastai show instance "$INSTANCE_ID" --raw | jq -r '.search.totalHour')
 
 if test -z "$PUBLIC_IP"; or test "$PUBLIC_IP" = "null"; or test -z "$HOST_PORT"; or test "$HOST_PORT" = "null"
     echo "⚠️ Não foi possível recuperar IP/Porta automaticamente. Verifique o console."
@@ -116,7 +117,7 @@ echo "=============================================="
 echo "🌐 Endpoint API: $API_URL/v1"
 echo "🔑 API Key:      $API_KEY_LLAMA"
 echo "💻 Instância ID: $INSTANCE_ID"
-echo "💰 Preço ~:      (consulte 'vastai show instance $INSTANCE_ID --raw')"
+echo "💰 Preço ~:      \$$COST"
 echo ""
 echo "📝 Exemplo de chamada cURL:"
 echo "curl $API_URL/v1/chat/completions \\"
@@ -127,5 +128,5 @@ echo "=============================================="
 echo ""
 echo "🗑️ Para destruir e parar de ser cobrado:"
 echo "vastai destroy instance $INSTANCE_ID"
-echo "Para conexão SSH"
-echo "sudo ssh -p 27705 root@$PUBLIC_IP -L 8080:localhost:8080 -i .ssh/id_ed25519"
+echo "🖥️ Para conexão SSH"
+echo "sudo ssh -p $SSH_PORT root@$PUBLIC_IP -L 8080:localhost:8080 -i ~/.ssh/id_ed25519"
