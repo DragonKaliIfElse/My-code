@@ -1,19 +1,131 @@
 #!/bin/fish
-set OPEN_BUTTON_TOKEN (cat /home/4n4tm4n/.OPEN_BUTTON_TOKEN)
-set ID (vastai search offers 'gpu_ram>=32 gpu_ram<64 gpu_name=RTX_A6000' --order dph --limit 1 --raw | grep ask_contract_id | awk '{print$2}' | sed 's|,||')
-vastai create instance "$ID" \
-  --image vastai/vllm:v0.19.0-cuda-12.9 \
-  --env '-p 1111:1111 -p 7860:7860 -p 8080:8080 -p 8000:8000 -p 8265:8265 \
-         -e OPEN_BUTTON_TOKEN="$OPEN_BUTTON_TOKEN"
-         -e OPEN_BUTTON_PORT="1111" \
-         -e JUPYTER_DIR="/" \
-         -e DATA_DIRECTORY="/workspace/" \
-         -e PORTAL_CONFIG="localhost:1111:11111:/:Instance Portal|localhost:7860:17860:/:Model UI|localhost:8000:18000:/docs:vLLM API|localhost:8265:28265:/:Ray Dashboard|localhost:8080:18080:/:Jupyter|localhost:8080:8080:/terminals/1:Jupyter Terminal" \
-         -e VLLM_MODEL="Qwen/Qwen3.6-35B-A3B-FP8" \
-         -e VLLM_ARGS="--max-model-len 8192 --download-dir /workspace/models --host 127.0.0.1 --port 18000 --enable-auto-tool-choice --tool-call-parser hermes" \
-         -e AUTO_PARALLEL="true" \
-         -e RAY_ADDRESS="127.0.0.1" \
-         -e RAY_ARGS="--head --port 6379 --dashboard-host 127.0.0.1 --dashboard-port 28265"' \
-  --onstart-cmd 'entrypoint.sh' \
-  --disk 50 \
-  --jupyter --ssh --direct
+# =============================================================================
+# CONFIGURAÇÕES (EDITE CONFORME NECESSÁRIO)
+# =============================================================================
+set VAST_API_KEY "3940d988887911028b7f239aedbf094568827df74b111fe1005b7435a34a3f19"
+set MODEL_REPO "unsloth/Qwen3.6-35B-A3B-GGUF"
+set MODEL_FILE "Qwen3.6-35B-A3B-UD-Q5_K_XL.gguf"
+set HF_TOKEN ""                                  # Deixe vazio se o repo for público. Preencha se for gated.
+set DISK_GB 50                                   # 50GB é seguro para este modelo (~18-20GB) + sistema
+set SERVER_PORT 8080
+set API_KEY_LLAMA "agent-secret-key-2024"        # Token que seus agentes usarão para autenticar
+
+# =============================================================================
+# PRÉ-REQUISITOS & VALIDAÇÃO
+# =============================================================================
+if not command -v vastai &>/dev/null
+    echo "❌ CLI 'vastai' não encontrada. Instale: pip install vastai"
+    exit 1
+end
+if not command -v jq &>/dev/null
+    echo "❌ 'jq' não encontrado. Instale: sudo apt install jq"
+    exit 1
+end
+
+echo "🔑 Configurando API Key do Vast.ai..."
+vastai set api-key "$VAST_API_KEY"
+
+# =============================================================================
+# 1. BUSCAR A OFERTA MAIS BARATA
+# =============================================================================
+echo "🔍 Buscando Tesla V100 (VRAM ≥32GB) ordenado por menor preço..."
+set SEARCH_FILTER "gpu_name=Tesla_V100 gpu_ram>=32 rentable=true verified=true"
+set RAW_SEARCH (vastai search offers "$SEARCH_FILTER" --order dph_total --limit 1 --raw)
+set OFFER_ID (echo "$RAW_SEARCH" | jq -r '.[0].id')
+
+if test -z "$OFFER_ID"; or test "$OFFER_ID" = "null"
+    echo "❌ Nenhuma instância disponível com os critérios especificados."
+    exit 1
+end
+echo "✅ Oferta encontrada! ID: $OFFER_ID"
+
+if test -n "$HF_TOKEN"
+    set HF_HEADER "-H \"Authorization: Bearer $HF_TOKEN\""
+end
+
+# =============================================================================
+# 2. CRIAR A INSTÂNCIA
+# =============================================================================
+echo "⏳ Criando instância..."
+# Captura a saída do comando de criação real
+vastai create instance "$OFFER_ID" \
+    --image ghcr.io/ggml-org/llama.cpp:server \
+    --disk "$DISK_GB" \
+    --env "-p $SERVER_PORT:$SERVER_PORT" \
+    --onstart-cmd "
+        mkdir -p /models && \
+        curl -L -f -o /models/model.gguf \
+        $HF_HEADER \
+        https://huggingface.co/$MODEL_REPO/resolve/main/$MODEL_FILE && \
+        llama-server -m /models/model.gguf \
+                     -ngl 99 \
+                     --host 0.0.0.0 \
+                     --port $SERVER_PORT \
+                     --api-key $API_KEY_LLAMA
+    " \
+    --ssh --direct --raw
+
+# Pega o ID da instância criada a partir da resposta do create
+
+set INSTANCE_ID (vastai show instances --raw | jq -r '.[0].id')
+
+if test -z "$INSTANCE_ID"; or test "$INSTANCE_ID" = "null"
+    echo "❌ Falha crítica: Não foi possível obter o ID da instância criada."
+    exit 1
+end
+
+echo "🚀 Instância criada! ID: $INSTANCE_ID"
+
+# =============================================================================
+# 3. AGUARDAR INICIALIZAÇÃO & OBTER ENDEREÇO
+# =============================================================================
+echo "⏳ Aguardando instância ficar 'running'..."
+while true
+    set STATUS (vastai show instance "$INSTANCE_ID" --raw | jq -r '.actual_status')
+    
+    if test "$STATUS" = "running"
+        echo "✅ Instância está pronta e rodando!"
+        break
+    else if string match -q "$STATUS" "exited" "unknown" "offline"
+        echo "❌ Instância falhou na inicialização (Status: $STATUS). Destruindo..."
+        vastai destroy instance "$INSTANCE_ID"
+        exit 1
+    end
+    sleep 10
+end
+
+# Extrai IP público e porta mapeada
+set PUBLIC_IP (vastai show instance "$INSTANCE_ID" --raw | jq -r '.public_ipaddr')
+set HOST_PORT (vastai show instance "$INSTANCE_ID" --raw | jq -r '.ports["8080/tcp"][0].HostPort')
+set HOST_PORT (vastai show instance "$INSTANCE_ID" --raw | jq -r '.ports["8080/tcp"][0].HostPort')
+
+if test -z "$PUBLIC_IP"; or test "$PUBLIC_IP" = "null"; or test -z "$HOST_PORT"; or test "$HOST_PORT" = "null"
+    echo "⚠️ Não foi possível recuperar IP/Porta automaticamente. Verifique o console."
+    echo "Use: vastai show instance $INSTANCE_ID"
+    exit 1
+end
+
+# =============================================================================
+# 4. RESULTADO FINAL
+# =============================================================================
+set API_URL "http://$PUBLIC_IP:$HOST_PORT"
+echo ""
+echo "=============================================="
+echo "🎉 INSTÂNCIA PRONTA PARA SEUS AGENTES!"
+echo "=============================================="
+echo "🌐 Endpoint API: $API_URL/v1"
+echo "🔑 API Key:      $API_KEY_LLAMA"
+echo "💻 Instância ID: $INSTANCE_ID"
+echo "💰 Preço ~:      (consulte 'vastai show instance $INSTANCE_ID --raw')"
+echo ""
+echo "📝 Exemplo de chamada cURL:"
+echo "curl $API_URL/v1/chat/completions \\"
+echo "  -H \"Content-Type: application/json\" \\"
+echo "  -H \"Authorization: Bearer $API_KEY_LLAMA\" \\"
+echo "  -d '{\"model\": \"Qwen3.6-35B-A3B-UD-Q5_K_XL\", \"messages\": [{\"role\": \"user\", \"content\": \"Olá!\"}]}'"
+echo "=============================================="
+echo ""
+echo "🗑️ Para destruir e parar de ser cobrado:"
+echo "vastai destroy instance $INSTANCE_ID"
+echo "Para conexão SSH"
+echo "sudo ssh -p 27705 root@$PUBLIC_IP -L 8080:localhost:8080 -i .ssh/id_ed25519"
