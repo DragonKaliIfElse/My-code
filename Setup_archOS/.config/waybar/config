@@ -216,7 +216,7 @@
     "custom/power": {
         "format": " 󰐥 ",
         "tooltip": false,
-        "on-click": "wlogout"
+        "on-click": "kitty sh -c 'shutdown now'"
     },
 
     "clock": {
