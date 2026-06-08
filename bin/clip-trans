@@ -1,18 +1,18 @@
-#!/bin/bash
-clip2=""
-i=0
-while [ true ];do
+#!/bin/fish
+set clip2 ""
+set i 0
+while true
     sleep 1
-    clip1=$(wl-paste)
-    if [ "$clip1" != "$clip2" ];then 
-        ((i++))
+    set clip1 (wl-paste)
+    if test "$clip1" = "cancel"
+        exit 0
+    else if test "$clip1" != "$clip2"
+        set i (math $i+1)
         clear
         echo "cancel"
         trans -e google :pt "$clip1"
-        clip2=$(wl-paste)
-    elif [ "$clip1" == "cancel" ];then
-        exit 0
-    fi
-done
+        set clip2 (wl-paste)
+    end
+end
 
 

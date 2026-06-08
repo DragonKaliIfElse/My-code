@@ -1,116 +1,79 @@
-#!/bin/bash
-mode="online"
-clearMode="off"
-while [[ "$1" != "" ]]; do
-    case $1 in
-        --offline)
-            shift
-            mode="offline"
-            ;;
-        --online)
-            shift
-            mode="online"
-            ;;
-        --clearOn)
-            shift
-            clearMode="on"
-            ;;
-        --con)
-            shift
-            clearMode="on"
-            ;;
-        --help)
-            shift
+#!/bin/fish
+set mode "online"
+set clearMode "off"
+for arg in  "$argv"
+    switch "$arg"
+        case "--offline"
+            set mode "offline"
+        case "--online"
+            set mode "online"
+        case "--clearOn" "--con"
+            set clearMode "on"
+        case "--help" "-h"
             echo -e " --offline -> desativa a pesquisa via internet\n --clearOn ou --con -> ativa o clearMode\n\n ***DENTRO DO TRADUTOR***\n\n clearOn -> ativa o clearMode\n clearOff -> desativa o clearMode\n offline -> desativa a pesquisa via internet\n online -> ativa a pesquisa na internet\n dict -> abre o dicionário"
             exit
-            ;;
-        -h)
-            shift
-            echo -e " --offline -> desativa a pesquisa via internet\n --clearOn ou --con -> ativa o clearMode\n\n ***DENTRO DO TRADUTOR***\n\n clearOn -> ativa o clearMode\n clearOff -> desativa o clearMode\n offline -> desativa a pesquisa via internet\n online -> ativa a pesquisa na internet\n dict -> abre o dicionário"
-            exit
-            ;;
-        *)
+        case *
             echo "Opção inválida: $1"
             exit
-            ;;
-    esac
-done
+    end
+end
 
-while true; do
+while true
     echo "««WORD»»"
     echo ""
     read word
     echo ""
-    case $word in 
-        "clear")
+    switch $word 
+        case "clear"
             clear
             continue
-            ;;
-        "offline")
-            mode="offline"
-            if [ "$clearMode" == "on" ]; then
+        case "offline"
+            set mode "offline"
+            if test "$clearMode" = "on"
                 clear
-            fi
+            end
             continue
-            ;;
-        "online")
-            mode="online"
-            if [ "$clearMode" == "on" ]; then
+        case "online"
+            set mode "online"
+            if test "$clearMode" = "on"
                 clear
-            fi
+            end
             continue
-            ;;
-        "clearOn")
-            clearMode="on"
-            if [ "$clearMode" == "on" ]; then
+        case "clearOn" "clearon"
+            set clearMode "on"
+            if test "$clearMode" = "on"
                 clear
-            fi
+            end
             continue
-            ;;
-        "clearon")
-            clearMode="on"
-            if [ "$clearMode" == "on" ]; then
-                clear
-            fi
+        case "clearOff" "clearoff"
+            set clearMode "off"
             continue
-            ;;
-        "clearOff")
-            clearMode="off"
-            continue
-            ;;
-        "clearoff")
-            clearMode="off"
-            continue
-            ;;
-        "help")
+        case "help"
             echo -e " --offline -> desativa a pesquisa via internet\n --clearOn ou --con -> ativa o clearMode\n\n ***DENTRO DO TRADUTOR***\n\n clearOn -> ativa o clearMode\n clearOff -> desativa o clearMode\n offline -> desativa a pesquisa via internet\n online -> ativa a pesquisa na internet\n dict -> abre o dicionário\n"
             echo "***PRESS ANY BUTTON TO CONTINUE***"
             read button
-            if [ "$clearMode" == "on" ]; then
+            if test "$clearMode" = "on"
                 clear
-            fi
+            end
             continue
-            ;;
-        "change")
+        case "change"
             exit 0
-            ;;
-        "clip")
+        case "clip"
             exit 1
-            ;;
-    esac
+    end
     echo "««TRADUCTION»»"
     echo ""
-    if [ "$mode" == "online" ]; then
+    if test "$mode" = "online"
         trans -e google :pt "$word"
             echo ""
-    elif [ "$mode" == "offline" ]; then
+    else if test "$mode" = "offline"
         trans.py $word
         echo ""
-    fi
-    if [ "$clearMode" == "on" ];then
+    end
+    if test "$clearMode" = "on"
         echo "««WAITING»»"
         read palavra
         clear
-    fi
-done
+    end
+end
 

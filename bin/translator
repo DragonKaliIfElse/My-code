@@ -1,27 +1,30 @@
-#!/bin/bash
-mode="pt"
+#!/bin/fish
+set mode "pt"
 while true
-do
-    if [ "$mode" == "pt" ]; then
+    if test "$mode" = "pt"
         tradutor
-        case "$?" in
-            0) mode="en";;
-            1) mode="clip";;
-        esac
-    elif [ "$mode" == "en" ]; then
+        switch "$status"
+            case 0
+                set mode "en"
+            case 1
+                set mode "clip"
+        end
+    else if test "$mode" = "en"
         translate 
-        case "$?" in
-            0) mode="pt";;
-            1) mode="clip";;
-        esac
-    elif [ "$mode" == "clip" ];then
+        switch "$status"
+            case 0
+                set mode "pt"
+            case 1
+                set mode "clip"
+        end
+    else if test "$mode" = "clip"
         clip-trans
-        case "$?" in
-            0) mode="pt";;
-        esac
+        switch "$status"
+            case 0
+                set mode "pt"
+        end
     else
         echo "invalid argument: $mode"
         read mode
-    fi
-done
-
+    end
+end

@@ -1,0 +1,5 @@
+#!/bin/fish
+set path "/home/an4tm4n/wallpapers"
+set wallpapers (ls $path)
+set imagem (random choice $wallpapers)
+awww img "$path/$imagem"

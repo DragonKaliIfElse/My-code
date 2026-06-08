@@ -1,2 +1,2 @@
-#!/bin/bash
-proxychains4 $@
+#!/bin/fish
+proxychains4 "$argv"

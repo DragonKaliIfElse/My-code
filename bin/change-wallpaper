@@ -1,10 +1,10 @@
-#!/bin/bash
-while [ true ]; do
-    if [ "$1" == "" ]; then
+#!/bin/fish
+while true
+    if test -z "$argv[1]"
         sleep 300
-        toggle-wallpaper.sh
+        toggle-wallpaper
     else
-        sleep "$1"
-        toggle-wallpaper.sh
-    fi
-done
+        sleep "$argv[1]"
+        toggle-wallpaper
+    end
+end
