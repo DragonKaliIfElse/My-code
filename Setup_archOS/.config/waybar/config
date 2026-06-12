@@ -13,7 +13,7 @@
     "margin-bottom": 0,
     "margin-right": 10,
 
-    "spacing": 5, // Gaps between modules (4px)
+    "spacing": 0, // Gaps between modules (4px)
 
     "modules-left": [
         //"custom/rofi",
