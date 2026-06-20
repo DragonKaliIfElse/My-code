@@ -73,7 +73,7 @@
     },
     "custom/wallpaper":{
         "format": "🖼",
-        "on-click": "random_wallpaper"
+        "on-click": "change-wallpaper"
     },
     "clock#1": {
         "format": " {:%a}",
