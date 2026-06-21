@@ -1,4 +1,8 @@
 #!/bin/fish
 set path "/home/an4tm4n/wallpapers/"
 set wallpaper (ls $path | wofi --dmenu)
+if test "$wallpaper" = "random_wallpaper"
+    random_wallpaper
+    exit
+end
 awww img "$path$wallpaper"
