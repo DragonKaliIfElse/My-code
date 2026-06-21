@@ -102,14 +102,14 @@
         "format-icons": ["", "", ""],
         "max-length": 7,
         "min-length": 7,
-        "on-click": "alacritty --hold -e watch -n 1 sensors "
+        "on-click": "kitty --hold -e watch -n 1 sensors "
 
     },
 
     "memory": {
         "interval": 30,
         "format": "  {used:0.2f} / {total:0.0f} GB",
-        "on-click": "alacritty -e btop"
+        "on-click": "kitty -e btop"
     },
 
     "battery": {
@@ -216,7 +216,7 @@
     "custom/power": {
         "format": " 󰐥 ",
         "tooltip": false,
-        "on-click": "kitty sh -c 'shutdown now'"
+        "on-click": "kitty fish -c 'shutdown now'"
     },
 
     "clock": {
@@ -235,8 +235,6 @@
       "interval": 5,
       "return-type": "json",
       "exec": {
-        "pre": "if unit_status=\"$(systemctl --user is-active gammastep)\"; then\nstatus=\"$unit_status ($(journalctl --user -u gammastep.service -g 'Period: ' | tail -1 | cut -d ':' -f6 | xargs))\"\nelse\nstatus=\"$unit_status\"\nfi",
-        "alt": "${status:-inactive}",
         "tooltip": "Gammastep is $status",
       },
       "format": "{icon}",
@@ -261,7 +259,8 @@
         //"format": " {}%", // Icon: microchip
         "format": "{max_frequency}GHz <span color=\"darkgray\">| {usage}%</span>",
         "max-length": 13,
-        "min-length": 13
+        "min-length": 13,
+        "on-click": "kitty -e btop"
     },
 
     "mpd": {
@@ -345,6 +344,8 @@
             "phone": "",
             "portable": "",
             "car": "",
+            "default": ["", "", ""]
+        },
             "default": ["", "", ""]
         },
         "on-click": "pavucontrol",
