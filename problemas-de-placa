@@ -1,0 +1,16 @@
+"/etc/kernel/cmdline": {"root=/dev/ArchinstallVg/root zswap.enabled=0 rw rootfstype=xfs amd_iommu=off noirqdebug irqfixup pcie_aspm=off irqpoll usbcore.autosuspend=-1"},
+"/etc/systemd/system/kill-gpio-bug.service": {
+    "[Unit]
+    Description=Corta o bug de 100% de CPU desvinculando o chip amd-gpio
+    After=multi-user.target
+
+    [Service]
+    Type=oneshot
+    ExecStart=/bin/sh -c "echo 'AMDI0030:00' > /sys/bus/platform/drivers/amd_gpio/unbind"
+    RemainAfterExit=yes
+
+    [Install]
+    WantedBy=multi-user.target
+    "
+},
+
