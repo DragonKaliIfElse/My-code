@@ -1,4 +1,4 @@
-"/etc/kernel/cmdline": {"root=/dev/ArchinstallVg/root zswap.enabled=0 rw rootfstype=xfs amd_iommu=off noirqdebug irqfixup pcie_aspm=off irqpoll usbcore.autosuspend=-1 processor.max_cstate=1 amdgpu.audio=0 amdgpu.runpm=0"},
+"/etc/kernel/cmdline": {"root=/dev/ArchinstallVg/root zswap.enabled=0 rw rootfstype=xfs amd_iommu=off noirqdebug irqfixup pcie_aspm=off irqpoll usbcore.autosuspend=-1 processor.max_cstate=1 amdgpu.audio=0 amdgpu.runpm=0 idle=nomwait"},
 "/etc/systemd/system/kill-gpio-bug.service": {
     "[Unit]
     Description=Corta o bug de 100% de CPU desvinculando o chip amd-gpio
