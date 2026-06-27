@@ -2,7 +2,7 @@
 # =============================================================================
 # CONFIGURAÇÕES (EDITE CONFORME NECESSÁRIO)
 # =============================================================================
-set VAST_API_KEY "3940d988887911028b7f239aedbf094568827df74b111fe1005b7435a34a3f19"
+set VAST_API_KEY ""
 set MODEL_REPO "unsloth/Qwen3.6-35B-A3B-GGUF"
 set MODEL_FILE "Qwen3.6-35B-A3B-UD-Q5_K_XL.gguf"
 set HF_TOKEN ""                                  # Deixe vazio se o repo for público. Preencha se for gated.
