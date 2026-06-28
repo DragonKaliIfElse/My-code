@@ -1,0 +1,2 @@
+sudo pacman -Syu ttf-jetbrains-mono-nerd fastfetch fish spotify neovim waybar awww zip unzip qt6ct kvantum npm 
+set -Ux QT_QPA_PLATFORMTHEME qt6ct
